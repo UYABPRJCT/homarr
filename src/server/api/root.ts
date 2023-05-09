@@ -10,6 +10,7 @@ import { rssRouter } from './routers/rss';
 import { usenetRouter } from './routers/usenet';
 import { calendarRouter } from './routers/calendar';
 import { pingRouter } from './routers/ping';
+import { userRouter } from '~/server/api/routers/user';
 import { dashboardRouter } from './routers/dashboard';
 
 /**
@@ -29,6 +30,7 @@ export const appRouter = createTRPCRouter({
   usenet: usenetRouter,
   calendar: calendarRouter,
   ping: pingRouter,
+  user: userRouter,
   dashboard: dashboardRouter,
 });
 
