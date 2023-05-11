@@ -10,6 +10,7 @@ import { IWidget } from '../widgets';
 import { CalendarDay } from './CalendarDay';
 import { getBgColorByDateAndTheme } from './bg-calculator';
 import { MediasType } from './type';
+import { useEditModeStore } from '../../components/Dashboard/Views/useEditModeStore';
 
 const definition = defineWidget({
   id: 'calendar',
@@ -52,6 +53,7 @@ function CalendarTile({ widget }: CalendarTileProps) {
   const { colorScheme } = useMantineTheme();
   const { name: configName } = useConfigContext();
   const [month, setMonth] = useState(new Date());
+  const isEditMode = useEditModeStore((x) => x.enabled);
 
   const { data: medias } = useQuery({
     queryKey: ['calendar/medias', { month: month.getMonth(), year: month.getFullYear() }],
@@ -108,6 +110,7 @@ function CalendarTile({ widget }: CalendarTileProps) {
       renderDay={(date) => (
         <CalendarDay date={date} medias={getReleasedMediasForDate(medias, date, widget)} />
       )}
+      static={isEditMode}
     />
   );
 }
