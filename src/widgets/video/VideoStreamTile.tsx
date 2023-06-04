@@ -2,31 +2,32 @@ import { Center, Group, Stack, Title } from '@mantine/core';
 import { IconDeviceCctv, IconHeartBroken } from '@tabler/icons';
 import { useTranslation } from 'next-i18next';
 import dynamic from 'next/dynamic';
-import { defineWidget } from '../helper';
-import { IWidget } from '../widgets';
+import { z } from 'zod';
+import {
+  createWidgetComponent,
+  defineWidget,
+  widgetOption,
+} from '~/new-components/dashboard/items/widget/definition';
 
 const VideoFeed = dynamic(() => import('./VideoFeed'), { ssr: false });
 
 const definition = defineWidget({
-  id: 'video-stream',
+  sort: 'video-stream',
   icon: IconDeviceCctv,
   options: {
-    FeedUrl: {
-      type: 'text',
+    feedUrl: widgetOption.text(z.string(), {
       defaultValue: '',
-    },
-    autoPlay: {
-      type: 'switch',
+      nullable: false,
+    }),
+    autoPlay: widgetOption.switch(z.boolean(), {
       defaultValue: true,
-    },
-    muted: {
-      type: 'switch',
+    }),
+    muted: widgetOption.switch(z.boolean(), {
       defaultValue: true,
-    },
-    controls: {
-      type: 'switch',
+    }),
+    controls: widgetOption.switch(z.boolean(), {
       defaultValue: false,
-    },
+    }),
   },
   gridstack: {
     minWidth: 3,
@@ -34,18 +35,11 @@ const definition = defineWidget({
     maxWidth: 12,
     maxHeight: 12,
   },
-  component: VideoStreamWidget,
 });
 
-export type VideoStreamWidget = IWidget<(typeof definition)['id'], typeof definition>;
-
-interface VideoStreamWidgetProps {
-  widget: VideoStreamWidget;
-}
-
-function VideoStreamWidget({ widget }: VideoStreamWidgetProps) {
+const VideoStreamWidget = createWidgetComponent(definition, ({ options }) => {
   const { t } = useTranslation('modules/video-stream');
-  if (!widget.properties.FeedUrl) {
+  if (!options.feedUrl) {
     return (
       <Center h="100%">
         <Stack align="center">
@@ -58,13 +52,13 @@ function VideoStreamWidget({ widget }: VideoStreamWidgetProps) {
   return (
     <Group position="center" w="100%" h="100%">
       <VideoFeed
-        source={widget?.properties.FeedUrl}
-        muted={widget?.properties.muted}
-        autoPlay={widget?.properties.autoPlay}
-        controls={widget?.properties.controls}
+        source={options.feedUrl}
+        muted={options.muted}
+        autoPlay={options.autoPlay}
+        controls={options.controls}
       />
     </Group>
   );
-}
+});
 
-export default definition;
+export default VideoStreamWidget;

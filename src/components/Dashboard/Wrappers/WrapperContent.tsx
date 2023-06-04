@@ -3,7 +3,7 @@ import { MutableRefObject, RefObject } from 'react';
 import { AppType } from '../../../types/app';
 import Widgets from '../../../widgets';
 import { IWidget, IWidgetDefinition } from '../../../widgets/widgets';
-import { WidgetWrapper } from '../../../widgets/WidgetWrapper';
+import { WidgetItem } from '../../../widgets/WidgetWrapper';
 import { appTileDefinition } from '../Tiles/Apps/AppTile';
 import { GridstackTileWrapper } from '../Tiles/TileWrapper';
 import { useGridstackStore } from './gridstack/store';
@@ -57,7 +57,7 @@ export function WrapperContent({ apps, refs, widgets }: WrapperContentProps) {
             {...widget.shape[shapeSize]?.location}
             {...widget.shape[shapeSize]?.size}
           >
-            <WidgetWrapper
+            <WidgetItem
               className="grid-stack-item-content"
               widget={widget}
               widgetType={widget.type}

@@ -34,6 +34,8 @@ import {
 } from '../tools/server/getPackageVersion';
 import { theme } from '../tools/server/theme/theme';
 import nextI18nextConfig from '../../next-i18next.config';
+import { CategoryEditModal as NewCategoryEditModal } from '../new-components/dashboard/groups/category/category-edit-modal';
+import { contextModals } from '~/tools/mantineModalManagerExtensions';
 
 function App(
   this: any,
@@ -130,8 +132,10 @@ function App(
                     integrationOptions: WidgetsEditModal,
                     integrationRemove: WidgetsRemoveModal,
                     categoryEditModal: CategoryEditModal,
+                    editCategoryModal: NewCategoryEditModal,
                     changeAppPositionModal: ChangeAppPositionModal,
                     changeIntegrationPositionModal: ChangeWidgetPositionModal,
+                    ...contextModals,
                   }}
                 >
                   <Component {...pageProps} />

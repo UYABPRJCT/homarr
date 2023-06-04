@@ -1,3 +1,4 @@
+import { clsx } from '@mantine/core';
 import { WrapperType } from '../../../../types/wrapper';
 import { useEditModeStore } from '../../Views/useEditModeStore';
 import { useGridstack } from '../gridstack/use-gridstack';
@@ -17,7 +18,7 @@ export const DashboardWrapper = ({ wrapper }: DashboardWrapperProps) => {
       className={
         apps.length > 0 || widgets.length > 0 || isEditMode
           ? defaultClasses
-          : `${defaultClasses} gridstack-empty-wrapper`
+          : clsx(defaultClasses, 'gridstack-empty-wrapper')
       }
       style={{ transitionDuration: '0s' }}
       data-wrapper={wrapper.id}

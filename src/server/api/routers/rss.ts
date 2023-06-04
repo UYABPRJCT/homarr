@@ -66,8 +66,11 @@ export const rssRouter = createTRPCRouter({
         const orderedFeed = {
           ...feed,
           items: feed.items
-            .map((item: { title: any; content: any }) => ({
+            .map((item: { title: any; content: any; categories: string[] | { _: string }[] }) => ({
               ...item,
+              categories: item.categories
+                ?.map((category) => (typeof category === 'string' ? category : category._))
+                .filter((category: unknown): category is string => typeof category === 'string'),
               title: item.title ? decode(item.title) : undefined,
               content: decode(item.content),
               enclosure: createEnclosure(item),
@@ -89,6 +92,8 @@ export const rssRouter = createTRPCRouter({
         success: result.status === 'fulfilled',
         feed: result.status === 'fulfilled' ? result.value : undefined,
       }));
+
+      await rssFeedResultObjectSchema.parseAsync(results[0]);
 
       return results;
     }),
