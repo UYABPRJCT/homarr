@@ -5,22 +5,16 @@ import ConfigChanger from '../../Config/ConfigChanger';
 import ConfigActions from './Config/ConfigActions';
 import LanguageSelect from './Language/LanguageSelect';
 import { SearchEngineSelector } from './SearchEngine/SearchEngineSelector';
+import { useDashboard } from '~/pages';
 
 export default function CommonSettings() {
-  const { config } = useConfigContext();
+  const dashboard = useDashboard();
   const { height, width } = useViewportSize();
 
-  if (!config) {
-    return (
-      <Text color="red" align="center">
-        No active config
-      </Text>
-    );
-  }
   return (
     <ScrollArea style={{ height: height - 100 }} scrollbarSize={5}>
       <Stack>
-        <SearchEngineSelector searchEngine={config.settings.common.searchEngine} />
+        {/* TODO: Search engine is now defined for each user <SearchEngineSelector searchEngine={} /> */}
         <Space />
         <LanguageSelect />
         <ConfigChanger />

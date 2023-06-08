@@ -13,7 +13,7 @@ export default function ConfigChanger() {
   const { t } = useTranslation('settings/general/config-changer');
   const { name: configName, setConfigName } = useConfigContext();
 
-  const { data: configs, isLoading } = api.config.all.useQuery();
+  const { data: dashboards, isLoading } = api.dashboard.all.useQuery();
   const [activeConfig, setActiveConfig] = useState(configName);
   const [isRefreshing, toggle] = useToggle();
 
@@ -30,7 +30,7 @@ export default function ConfigChanger() {
   };
 
   // If configlist is empty, return a loading indicator
-  if (isLoading || !configs || configs.length === 0 || !configName) {
+  if (isLoading || !dashboards) {
     return (
       <Tooltip label={"Loading your configs. This doesn't load in vercel."}>
         <Center>
@@ -44,10 +44,13 @@ export default function ConfigChanger() {
     <>
       <Select
         label={t('configSelect.label')}
-        description={t('configSelect.description', { configCount: configs.length })}
+        description={t('configSelect.description', { configCount: dashboards.length })}
         value={activeConfig}
         onChange={onConfigChange}
-        data={configs}
+        data={dashboards.map((dashboard) => ({
+          value: dashboard.id,
+          label: dashboard.name,
+        }))}
       />
       <Dialog
         position={{ top: 0, left: 0 }}

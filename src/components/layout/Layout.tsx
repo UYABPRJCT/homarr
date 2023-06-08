@@ -1,14 +1,14 @@
 import { AppShell, createStyles } from '@mantine/core';
-import { useConfigContext } from '../../config/provider';
 import { Background } from './Background';
 import { Header } from './header/Header';
 import { Head } from './header/Meta/Head';
+import { useDashboard } from '~/pages';
 
 const useStyles = createStyles(() => ({}));
 
 export default function Layout({ children }: any) {
   const { cx } = useStyles();
-  const { config } = useConfigContext();
+  const dashboard = useDashboard();
 
   return (
     <AppShell
@@ -24,7 +24,7 @@ export default function Layout({ children }: any) {
       <Head />
       <Background />
       {children}
-      <style>{cx(config?.settings.customization.customCss)}</style>
+      <style>{cx(dashboard.customCss)}</style>
     </AppShell>
   );
 }

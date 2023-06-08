@@ -1,71 +1,78 @@
-import { getCookie, setCookie } from 'cookies-next';
-import fs from 'fs';
 import { GetServerSidePropsContext } from 'next';
 
+import { createServerSideHelpers } from '@trpc/react-query/server';
+import { ReactNode, createContext, useContext } from 'react';
+import superjson from 'superjson';
+import { appRouter } from '~/server/api/root';
+import { createTRPCContext } from '~/server/api/trpc';
+import { RouterOutputs, api } from '~/utils/api';
 import { LoadConfigComponent } from '../components/Config/LoadConfig';
 import { Dashboard } from '../components/Dashboard/Dashboard';
 import Layout from '../components/layout/Layout';
-import { useInitConfig } from '../config/init';
-import { getFrontendConfig } from '../tools/config/getFrontendConfig';
 import { getServerSideTranslations } from '../tools/server/getServerSideTranslations';
 import { dashboardNamespaces } from '../tools/server/translation-namespaces';
 import { DashboardServerSideProps } from '../types/dashboardPageType';
-import { api } from '~/utils/api';
 
 export async function getServerSideProps({
   req,
   res,
   locale,
 }: GetServerSidePropsContext): Promise<{ props: DashboardServerSideProps }> {
-  // Get all the configs in the /data/configs folder
-  // All the files that end in ".json"
-  const configs = fs.readdirSync('./data/configs').filter((file) => file.endsWith('.json'));
+  const helpers = createServerSideHelpers({
+    router: appRouter,
+    ctx: await createTRPCContext({ req: req as any, res: res as any }),
+    transformer: superjson, // optional - adds superjson serialization
+  });
 
-  if (
-    !configs.every(
-      (config) => JSON.parse(fs.readFileSync(`./data/configs/${config}`, 'utf8')).schemaVersion
-    )
-  ) {
-    // Replace the current page with the migrate page but don't redirect
-    // This is to prevent the user from seeing the redirect
-    res.writeHead(302, {
-      Location: '/migrate',
-    });
-    res.end();
-
-    return { props: {} as DashboardServerSideProps };
-  }
-
-  let configName = getCookie('config-name', { req, res });
-  if (!configName) {
-    setCookie('config-name', 'default', {
-      req,
-      res,
-      maxAge: 60 * 60 * 24 * 30,
-      sameSite: 'strict',
-    });
-    configName = 'default';
-  }
+  await helpers.dashboard.default.prefetch();
 
   const translations = await getServerSideTranslations(dashboardNamespaces, locale, req, res);
-  const config = getFrontendConfig(configName as string);
 
   return {
     props: {
-      configName: configName as string,
-      config,
       ...translations,
+      trpcState: helpers.dehydrate(),
     },
   };
 }
 
-export default function HomePage({ config: initialConfig }: DashboardServerSideProps) {
-  useInitConfig(initialConfig);
+export default function HomePage() {
+  const utils = api.useContext();
+  const dashboard = utils.dashboard.default.getData();
+  //useInitConfig(config);
 
   return (
-    <Layout>
-      <Dashboard />
-      <LoadConfigComponent />
-    </Layout>
+    <DashboardProvider dashboard={dashboard}>
+      <Layout>
+        <Dashboard />
+        <LoadConfigComponent />
+      </Layout>
+    </DashboardProvider>
   );
 }
+
+type Dashboard = RouterOutputs['dashboard']['default'];
+
+type DashboardContextType = {
+  dashboard: Dashboard;
+};
+
+const DashboardContext = createContext<DashboardContextType | null>(null);
+
+export const useDashboard = () => {
+  const context = useContext(DashboardContext);
+  if (!context) {
+    throw new Error('useDashboard must be used within a DashboardProvider');
+  }
+  return context.dashboard;
+};
+
+type DashboardProviderProps = {
+  dashboard: Dashboard | undefined;
+  children: JSX.Element;
+};
+
+export const DashboardProvider = ({ dashboard, children }: DashboardProviderProps) => {
+  if (!dashboard) return <span>Loading...</span>;
+  return <DashboardContext.Provider value={{ dashboard }}>{children}</DashboardContext.Provider>;
+};

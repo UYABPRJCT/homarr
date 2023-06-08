@@ -5,6 +5,7 @@ import { useConfigStore } from '../../config/store';
 
 import CommonSettings from './Common/CommonSettings';
 import CustomizationSettings from './Customization/CustomizationSettings';
+import { useDashboard } from '~/pages';
 
 function SettingsMenu({ newVersionAvailable }: { newVersionAvailable: string }) {
   const { t } = useTranslation('settings/common');
@@ -36,7 +37,6 @@ export function SettingsDrawer({
   newVersionAvailable,
 }: SettingsDrawerProps & { newVersionAvailable: string }) {
   const { t } = useTranslation('settings/common');
-  const { config, name: configName } = useConfigContext();
   const { updateConfig } = useConfigStore();
 
   return (
@@ -48,11 +48,8 @@ export function SettingsDrawer({
       opened={opened}
       onClose={() => {
         closeDrawer();
-        if (!configName || !config) {
-          return;
-        }
 
-        updateConfig(configName, (_) => config, false, true);
+        //updateConfig(configName, (_) => config, false, true);
       }}
     >
       <SettingsMenu newVersionAvailable={newVersionAvailable} />

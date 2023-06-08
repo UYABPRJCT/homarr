@@ -11,6 +11,7 @@ import { usenetRouter } from './routers/usenet';
 import { calendarRouter } from './routers/calendar';
 import { pingRouter } from './routers/ping';
 import { userRouter } from '~/server/api/routers/user';
+import { dashboardRouter } from './routers/dashboard';
 
 /**
  * This is the primary router for your server.
@@ -30,6 +31,7 @@ export const appRouter = createTRPCRouter({
   calendar: calendarRouter,
   ping: pingRouter,
   user: userRouter,
+  dashboard: dashboardRouter,
 });
 
 // export type definition of API

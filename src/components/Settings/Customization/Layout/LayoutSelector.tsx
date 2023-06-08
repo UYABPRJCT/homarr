@@ -12,28 +12,30 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'next-i18next';
 import { ChangeEvent, Dispatch, SetStateAction, useState } from 'react';
-import { useConfigContext } from '../../../../config/provider';
 import { useConfigStore } from '../../../../config/store';
 import { createDummyArray } from '../../../../tools/client/arrays';
 import { CustomizationSettingsType } from '../../../../types/settings';
 import { Logo } from '../../../layout/Logo';
+import { useDashboard } from '~/pages';
 
 export const LayoutSelector = () => {
   const { classes } = useStyles();
 
-  const { config, name: configName } = useConfigContext();
+  const dashboard = useDashboard();
   const updateConfig = useConfigStore((x) => x.updateConfig);
 
-  const layoutSettings = config?.settings.customization.layout;
-
-  const [leftSidebar, setLeftSidebar] = useState(layoutSettings?.enabledLeftSidebar ?? true);
-  const [rightSidebar, setRightSidebar] = useState(layoutSettings?.enabledRightSidebar ?? true);
-  const [docker, setDocker] = useState(layoutSettings?.enabledDocker ?? false);
-  const [ping, setPing] = useState(layoutSettings?.enabledPing ?? false);
-  const [searchBar, setSearchBar] = useState(layoutSettings?.enabledSearchbar ?? false);
+  const [isLeftSidebarEnabled, setLeftSidebarEnabled] = useState(
+    dashboard.groups.some((x) => x.type === 'sidebar' && x.position === 'left') ?? true
+  );
+  const [isRightSidebarEnabled, setRightSidebarEnabled] = useState(
+    dashboard.groups.some((x) => x.type === 'sidebar' && x.position === 'right') ?? true
+  );
+  const [isDockerEnabled, setDockerEnabled] = useState(dashboard.isDockerEnabled ?? false);
+  const [isPingEnabled, setPingEnabled] = useState(dashboard.isPingEnabled ?? false);
+  const [isSearchEnabled, setSearchEnabled] = useState(dashboard.isSearchEnabled ?? false);
   const { t } = useTranslation('settings/common');
 
-  if (!configName || !config) return null;
+  if (!dashboard) return null;
 
   const handleChange = (
     key: keyof CustomizationSettingsType['layout'],
@@ -42,7 +44,7 @@ export const LayoutSelector = () => {
   ) => {
     const value = event.target.checked;
     setState(value);
-    updateConfig(
+    /*updateConfig(
       configName,
       (prev) => {
         const { layout } = prev.settings.customization;
@@ -61,10 +63,8 @@ export const LayoutSelector = () => {
         };
       },
       true
-    );
+    );*/
   };
-
-  const enabledPing = layoutSettings?.enabledPing ?? false;
 
   return (
     <>
@@ -79,14 +79,14 @@ export const LayoutSelector = () => {
           <Group position="apart">
             <Logo size="xs" />
             <Group spacing={5}>
-              {searchBar && <PlaceholderElement width={60} height={10} />}
-              {docker && <PlaceholderElement width={10} height={10} />}
+              {isSearchEnabled && <PlaceholderElement width={60} height={10} />}
+              {isDockerEnabled && <PlaceholderElement width={10} height={10} />}
             </Group>
           </Group>
         </Paper>
 
         <Flex gap={6}>
-          {leftSidebar && (
+          {isLeftSidebarEnabled && (
             <Paper className={classes.secondaryWrapper} p="xs" withBorder>
               <Flex gap={5} wrap="wrap">
                 {createDummyArray(5).map((item, index) => (
@@ -95,7 +95,7 @@ export const LayoutSelector = () => {
                     width={30}
                     key={`example-item-right-sidebard-${index}`}
                     index={index}
-                    hasPing={enabledPing}
+                    hasPing={isPingEnabled}
                   />
                 ))}
               </Flex>
@@ -110,13 +110,13 @@ export const LayoutSelector = () => {
                   width={index % 5 === 0 ? 60 : 30}
                   key={`example-item-main-${index}`}
                   index={index}
-                  hasPing={enabledPing}
+                  hasPing={isPingEnabled}
                 />
               ))}
             </Flex>
           </Paper>
 
-          {rightSidebar && (
+          {isRightSidebarEnabled && (
             <Paper className={classes.secondaryWrapper} p="xs" withBorder>
               <Flex gap={5} align="start" wrap="wrap">
                 {createDummyArray(5).map((item, index) => (
@@ -125,7 +125,7 @@ export const LayoutSelector = () => {
                     width={index % 4 === 0 ? 60 + 5 : 30}
                     key={`example-item-right-sidebard-${index}`}
                     index={index}
-                    hasPing={enabledPing}
+                    hasPing={isPingEnabled}
                   />
                 ))}
               </Flex>
@@ -138,29 +138,29 @@ export const LayoutSelector = () => {
           <Checkbox
             label={t('layout.enablelsidebar')}
             description={t('layout.enablelsidebardesc')}
-            checked={leftSidebar}
-            onChange={(ev) => handleChange('enabledLeftSidebar', ev, setLeftSidebar)}
+            checked={isLeftSidebarEnabled}
+            onChange={(ev) => handleChange('enabledLeftSidebar', ev, setLeftSidebarEnabled)}
           />
           <Checkbox
             label={t('layout.enablersidebar')}
             description={t('layout.enablersidebardesc')}
-            checked={rightSidebar}
-            onChange={(ev) => handleChange('enabledRightSidebar', ev, setRightSidebar)}
+            checked={isRightSidebarEnabled}
+            onChange={(ev) => handleChange('enabledRightSidebar', ev, setRightSidebarEnabled)}
           />
           <Checkbox
             label={t('layout.enablesearchbar')}
-            checked={searchBar}
-            onChange={(ev) => handleChange('enabledSearchbar', ev, setSearchBar)}
+            checked={isSearchEnabled}
+            onChange={(ev) => handleChange('enabledSearchbar', ev, setSearchEnabled)}
           />
           <Checkbox
             label={t('layout.enabledocker')}
-            checked={docker}
-            onChange={(ev) => handleChange('enabledDocker', ev, setDocker)}
+            checked={isDockerEnabled}
+            onChange={(ev) => handleChange('enabledDocker', ev, setDockerEnabled)}
           />
           <Checkbox
             label={t('layout.enableping')}
-            checked={ping}
-            onChange={(ev) => handleChange('enabledPing', ev, setPing)}
+            checked={isPingEnabled}
+            onChange={(ev) => handleChange('enabledPing', ev, setPingEnabled)}
           />
         </Stack>
       </Stack>

@@ -17,8 +17,98 @@ datasource db {
 // Necessary for Next auth
 
 model User {
-  id       String  @id @default(cuid())
-  name     String?
-  password String
-  image    String?
+  id         String      @id @default(cuid())
+  name       String?
+  password   String
+  image      String?
+  dashboards Dashboard[]
+}
+
+// Homarr models
+
+model Dashboard {
+  id                    String      @id @default(cuid())
+  pageTitle             String?
+  metaTitle             String?
+  name                  String
+  isPublic              Boolean     @default(false)
+  logoSource            String?
+  faviconSource         String?
+  backgroundImageSource String?
+  customCss             String?
+  primaryColor          String?
+  secondaryColor        String?
+  primaryColorShade     Int?
+  appOpacity            Int?
+  isDockerEnabled       Boolean     @default(false)
+  isPingEnabled         Boolean     @default(false)
+  isSearchEnabled       Boolean     @default(false)
+  ownerId               String
+  owner                 User        @relation(fields: [ownerId], references: [id])
+  groups                ItemGroup[]
+}
+
+model ItemGroup {
+  id            String         @id @default(cuid())
+  type          String // sidebar, wrapper, category
+  index         Int?
+  dashboardId   String
+  dashboard     Dashboard      @relation(fields: [dashboardId], references: [id])
+  sidebarGroup  SidebarGroup?
+  categoryGroup CategoryGroup?
+  items         Item[]
+}
+
+model SidebarGroup {
+  id       String    @id
+  group    ItemGroup @relation(fields: [id], references: [id], onDelete: Cascade)
+  position String // right or left
+}
+
+model CategoryGroup {
+  id    String    @id
+  group ItemGroup @relation(fields: [id], references: [id], onDelete: Cascade)
+  name  String
+}
+
+model Item {
+  id         String      @id @default(cuid())
+  positionX  Int
+  positionY  Int
+  width      Int
+  height     Int
+  type       String // app, widget
+  groupId    String
+  group      ItemGroup   @relation(fields: [groupId], references: [id])
+  widgetItem WidgetItem?
+  appItem    AppItem?
+}
+
+model WidgetItem {
+  id      String         @id
+  item    Item           @relation(fields: [id], references: [id])
+  sort    String // sort of widget
+  options WidgetOption[]
+}
+
+model WidgetOption {
+  id       String         @id @default(cuid())
+  name     String
+  value    String
+  widgetId String
+  widget   WidgetItem     @relation(fields: [widgetId], references: [id])
+  type     String // string, number, boolean, object, array
+  parentId String?
+  parent   WidgetOption?  @relation("WidgetOptionParent", fields: [parentId], references: [id])
+  children WidgetOption[] @relation("WidgetOptionParent")
+}
+
+model AppItem {
+  id           String  @id
+  item         Item    @relation(fields: [id], references: [id])
+  name         String
+  internalUrl  String
+  externalUrl  String
+  iconSource   String
+  openInNewTab Boolean @default(false)
 }

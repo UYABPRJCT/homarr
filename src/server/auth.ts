@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
     session({ session, token }) {
       if (token && session.user) {
         // eslint-disable-next-line no-param-reassign
-        session.user.id = token.id as string;
+        session.user.id = token.sub as string;
         // eslint-disable-next-line no-param-reassign
         session.user.name = token.name as string;
       }
