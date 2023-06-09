@@ -1,8 +1,5 @@
-import { GridItemHTMLElement, GridStack, GridStackNode } from 'fily-publish-gridstack';
+import { GridStack, GridStackNode } from 'fily-publish-gridstack';
 import { MutableRefObject, RefObject } from 'react';
-import { AppType } from '../../../../types/app';
-import { ShapeType } from '../../../../types/shape';
-import { IWidget } from '../../../../widgets/widgets';
 import { Item, ItemGroup } from '../../types';
 
 export const initializeGridstack = (
@@ -66,27 +63,27 @@ export const initializeGridstack = (
   grid.batchUpdate();
   grid.removeAll(false);
   // TODO: add this but with new schema
-  /*items.forEach(({ id, shape }) => {
-    const item = itemRefs.current[id]?.current;
-    setAttributesFromShape(item, shape[shapeSize]);
-    item && grid.makeWidget(item as HTMLDivElement);
-    if (!shape[shapeSize] && item) {
-      const gridItemElement = item as GridItemHTMLElement;
+  items.forEach((item) => {
+    const itemRef = itemRefs.current[item.id]?.current;
+    setAttributesFromShape(itemRef, item);
+    itemRef && grid.makeWidget(itemRef as HTMLDivElement);
+    /*if (itemRef) {
+      const gridItemElement = itemRef as GridItemHTMLElement;
       if (gridItemElement.gridstackNode) {
         const { x, y, w, h } = gridItemElement.gridstackNode;
-        tilesWithUnknownLocation.push({ x, y, w, h, type: 'app', id });
+        tilesWithUnknownLocation.push({ x, y, w, h, type: item.type, id: item.id });
       }
-    }
-  });*/
+    }*/
+  });
   grid.batchUpdate(false);
 };
 
-function setAttributesFromShape(ref: HTMLDivElement | null, sizedShape: ShapeType['lg']) {
-  if (!sizedShape || !ref) return;
-  ref.setAttribute('gs-x', sizedShape.location.x.toString());
-  ref.setAttribute('gs-y', sizedShape.location.y.toString());
-  ref.setAttribute('gs-w', sizedShape.size.width.toString());
-  ref.setAttribute('gs-h', sizedShape.size.height.toString());
+function setAttributesFromShape(ref: HTMLDivElement | null, item: Item) {
+  if (!ref) return;
+  ref.setAttribute('gs-x', item.positionX.toString());
+  ref.setAttribute('gs-y', item.positionY.toString());
+  ref.setAttribute('gs-w', item.width.toString());
+  ref.setAttribute('gs-h', item.height.toString());
 }
 
 export type TileWithUnknownLocation = {

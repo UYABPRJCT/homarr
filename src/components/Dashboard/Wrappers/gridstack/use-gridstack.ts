@@ -21,10 +21,10 @@ interface UseGristackReturnType {
 
 export const useGridstack = (
   groupType: ItemGroup['type'],
-  areaId: string
+  groupId: string
 ): UseGristackReturnType => {
   const isEditMode = useEditModeStore((x) => x.enabled);
-  const { config, configVersion, name: configName } = useConfigContext();
+  //const { config, configVersion, name: configName } = useConfigContext();
   const dashboard = useDashboard();
   const updateConfig = useConfigStore((x) => x.updateConfig);
   // define reference for wrapper - is used to calculate the width of the wrapper
@@ -45,9 +45,9 @@ export const useGridstack = (
 
   const items = useMemo(
     () =>
-      dashboard.groups.find((group) => group.type === groupType && group.id === areaId)?.items ??
+      dashboard.groups.find((group) => group.type === groupType && group.id === groupId)?.items ??
       [],
-    [configVersion, config?.apps.length]
+    [dashboard.groups]
   );
 
   // define items in itemRefs for easy access and reference to items
@@ -72,14 +72,14 @@ export const useGridstack = (
 
   const onChange = isEditMode
     ? (changedNode: GridStackNode) => {
-        if (!configName) return;
+        //if (!configName) return;
 
         const itemType = changedNode.el?.getAttribute('data-type');
         const itemId = changedNode.el?.getAttribute('data-id');
         if (!itemType || !itemId) return;
 
         // Updates the config and defines the new position of the item
-        updateConfig(configName, (previous) => {
+        /*updateConfig(configName, (previous) => {
           const currentItem =
             itemType === 'app'
               ? previous.apps.find((x) => x.id === itemId)
@@ -114,13 +114,13 @@ export const useGridstack = (
               { ...(currentItem as IWidget<string, any>) },
             ],
           };
-        });
+        });*/
       }
     : () => {};
 
   const onAdd = isEditMode
     ? (addedNode: GridStackNode) => {
-        if (!configName) return;
+        //if (!configName) return;
 
         const itemType = addedNode.el?.getAttribute('data-type');
         const itemId = addedNode.el?.getAttribute('data-id');
@@ -227,7 +227,7 @@ export const useGridstack = (
       wrapperRef,
       gridRef,
       itemRefs,
-      areaId,
+      groupId,
       items,
       isEditMode,
       wrapperColumnCount,
