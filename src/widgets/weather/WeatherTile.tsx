@@ -1,6 +1,6 @@
 import { Center, Group, Skeleton, Stack, Text, Title } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
-import { IconArrowDownRight, IconArrowUpRight, IconCloudRain } from '@tabler/icons';
+import { IconArrowDownRight, IconArrowUpRight, IconCloudRain } from '@tabler/icons-react';
 import { z } from 'zod';
 import { createWidgetComponent, defineWidget, widgetOption } from '../common/definition';
 import { WeatherIcon } from './WeatherIcon';

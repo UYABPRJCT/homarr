@@ -6,6 +6,7 @@ import ConfigActions from './Config/ConfigActions';
 import LanguageSelect from './Language/LanguageSelect';
 import { SearchEngineSelector } from './SearchEngine/SearchEngineSelector';
 import { useDashboard } from '~/pages';
+import { CacheButtons } from './CacheButtons';
 
 export default function CommonSettings() {
   const dashboard = useDashboard();
@@ -18,6 +19,7 @@ export default function CommonSettings() {
         <Space />
         <LanguageSelect />
         <ConfigChanger />
+        <CacheButtons />
         <ConfigActions />
       </Stack>
     </ScrollArea>

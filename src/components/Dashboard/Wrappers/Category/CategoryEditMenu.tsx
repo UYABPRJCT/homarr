@@ -1,13 +1,13 @@
 import { ActionIcon, Menu } from '@mantine/core';
 import {
-  IconDots,
   IconEdit,
   IconRowInsertBottom,
   IconRowInsertTop,
   IconTransitionBottom,
   IconTransitionTop,
   IconTrash,
-} from '@tabler/icons';
+  IconSettings,
+} from '@tabler/icons-react';
 import { useConfigContext } from '../../../../config/provider';
 import { Category } from './Category';
 import { useCategoryActions } from './useCategoryActions';
@@ -25,7 +25,7 @@ export const CategoryEditMenu = ({ category }: CategoryEditMenuProps) => {
     <Menu withinPortal withArrow>
       <Menu.Target>
         <ActionIcon>
-          <IconDots />
+          <IconSettings />
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>

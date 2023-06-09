@@ -1,5 +1,5 @@
 import { Button, Group } from '@mantine/core';
-import { showNotification, updateNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import {
   IconCheck,
   IconPlayerPlay,
@@ -8,20 +8,15 @@ import {
   IconRefresh,
   IconRotateClockwise,
   IconTrash,
-} from '@tabler/icons';
-import axios from 'axios';
+} from '@tabler/icons-react';
 import Dockerode, { ContainerInfo } from 'dockerode';
-import { useTranslation } from 'next-i18next';
-import { useState } from 'react';
-import { TFunction } from 'react-i18next';
+import { Trans, useTranslation } from 'next-i18next';
 import { v4 as uuidv4 } from 'uuid';
+import { api } from '~/utils/api';
 import { useConfigContext } from '../../config/provider';
 import { openContextModalGeneric } from '../../tools/mantineModalManagerExtensions';
 import { MatchingImages, ServiceType, tryMatchPort } from '../../tools/types';
 import { AppType } from '../../types/app';
-import { api } from '~/utils/api';
-
-let t: TFunction<'modules/docker', undefined>;
 
 export interface ContainerActionBarProps {
   selected: Dockerode.ContainerInfo[];
@@ -29,7 +24,7 @@ export interface ContainerActionBarProps {
 }
 
 export default function ContainerActionBar({ selected, isLoading }: ContainerActionBarProps) {
-  t = useTranslation('modules/docker').t;
+  const { t } = useTranslation('modules/docker');
   const { name: configName, config } = useConfigContext();
   const getLowestWrapper = () => config?.wrappers.sort((a, b) => a.position - b.position)[0];
   const utils = api.useContext();
@@ -40,6 +35,14 @@ export default function ContainerActionBar({ selected, isLoading }: ContainerAct
   const refresh = () => {
     utils.docker.all.invalidate();
   };
+
+  if (process.env.DISABLE_EDIT_MODE === 'true') {
+    return null;
+  }
+
+  if (process.env.DISABLE_EDIT_MODE === 'true') {
+    return null;
+  }
 
   return (
     <Group spacing="xs">
@@ -185,10 +188,10 @@ const useDockerCommand = (action: 'start' | 'stop' | 'restart' | 'remove') => {
 
   return async (container: ContainerInfo) => {
     const containerName = container.Names[0].substring(1);
-    showNotification({
+    notifications.show({
       id: container.Id,
       loading: true,
-      title: `${t(`actions.${action}.start`)} ${containerName}`,
+      title: <Trans i18nKey={`actions.${action}.start`} values={{ containerName }} />,
       message: undefined,
       autoClose: false,
       withCloseButton: false,
@@ -202,20 +205,20 @@ const useDockerCommand = (action: 'start' | 'stop' | 'restart' | 'remove') => {
         onSuccess() {
           const containerName = container.Names[0].substring(1);
 
-          updateNotification({
+          notifications.update({
             id: container.Id,
             title: containerName,
-            message: `${t(`actions.${action}.end`)} ${containerName}`,
+            message: <Trans i18nKey={`actions.${action}.end`} values={{ containerName }} />,
             icon: <IconCheck />,
             autoClose: 2000,
           });
           utils.docker.all.invalidate();
         },
         onError() {
-          updateNotification({
+          notifications.update({
             id: container.Id,
             color: 'red',
-            title: t('errors.unknownError.title'),
+            title: <Trans i18nKey="errors.unknownError.title" />,
             // TODO: Add error message
             message: undefined,
             autoClose: 2000,

@@ -1,5 +1,5 @@
 import { Group, Stack, Text } from '@mantine/core';
-import { IconArrowNarrowDown, IconArrowNarrowUp } from '@tabler/icons';
+import { IconArrowNarrowDown, IconArrowNarrowUp } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { RouterOutputs } from '~/utils/api';
 import { bytes } from '../../tools/bytesHelper';

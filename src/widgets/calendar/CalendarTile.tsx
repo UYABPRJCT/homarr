@@ -1,6 +1,6 @@
 import { useMantineTheme } from '@mantine/core';
 import { Calendar } from '@mantine/dates';
-import { IconCalendarTime } from '@tabler/icons';
+import { IconCalendarTime } from '@tabler/icons-react';
 import { i18n } from 'next-i18next';
 import { useState } from 'react';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ import {
 import { CalendarDay } from './CalendarDay';
 import { getBgColorByDateAndTheme } from './bg-calculator';
 import { MediasType } from './type';
+import { useEditModeStore } from '../../components/Dashboard/Views/useEditModeStore';
 
 const definition = defineWidget({
   sort: 'calendar',
@@ -46,6 +47,7 @@ const CalendarWidget = createWidgetComponent(definition, ({ options }) => {
   const { colorScheme } = useMantineTheme();
   const dashboard = useDashboard();
   const [month, setMonth] = useState(new Date());
+  const isEditMode = useEditModeStore((x) => x.enabled);
 
   // TODO: Fix this
   const apps: any[] = []; /* constructClientSecretChangesForIntegrations(
@@ -64,7 +66,7 @@ const CalendarWidget = createWidgetComponent(definition, ({ options }) => {
       },
     },
     {
-      enabled: apps.length >= 1,
+      enabled: apps.length >= 1 && isEditMode === false,
       staleTime: 1000 * 60 * 60 * 5,
     }
   );

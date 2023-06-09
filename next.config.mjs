@@ -19,4 +19,5 @@ export default withBundleAnalyzer({
   reactStrictMode: true,
   output: 'standalone',
   i18n,
+  transpilePackages: ['@jellyfin/sdk'],
 });

@@ -1,5 +1,5 @@
 import { Center, createStyles, Grid, Stack, Text, Title } from '@mantine/core';
-import { IconUnlink } from '@tabler/icons';
+import { IconUnlink } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { z } from 'zod';
 import { api } from '~/utils/api';
@@ -11,6 +11,10 @@ const definition = defineWidget({
   icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dashdot.png',
   options: {
     url: widgetOption.text(z.string().url(), {
+      defaultValue: '',
+      nullable: false,
+    }),
+    dashName: widgetOption.text(z.string(), {
       defaultValue: '',
       nullable: false,
     }),
@@ -93,11 +97,11 @@ const DashDotWidget = createWidgetComponent(definition, ({ options }) => {
     );
   }
 
-  const { graphsOrder, usePercentages, columns, graphHeight } = options;
+  const { dashName, graphsOrder, usePercentages, columns, graphHeight } = options;
 
   return (
     <Stack spacing="xs">
-      <Title order={3}>{t('card.title')}</Title>
+      <Title order={3}>{dashName || t('card.title')}</Title>
       {!info && <p>{t('card.errors.noInformation')}</p>}
       {info && (
         <div className={classes.graphsContainer}>

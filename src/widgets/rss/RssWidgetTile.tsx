@@ -14,7 +14,7 @@ import {
   Title,
   createStyles,
 } from '@mantine/core';
-import { IconClock, IconRefresh, IconRss } from '@tabler/icons';
+import { IconClock, IconRefresh, IconRss } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'next-i18next';
 import Link from 'next/link';
@@ -32,6 +32,12 @@ const definition = defineWidget({
     }),
     refreshInterval: widgetOption.slider(z.number().min(15).max(300).step(15), {
       defaultValue: 30,
+    }),
+    dangerousAllowSanitizedItemContent: widgetOption.switch(z.boolean(), {
+      defaultValue: false,
+    }),
+    textLinesClamp: widgetOption.slider(z.number().min(1).max(50).step(1), {
+      defaultValue: 5,
     }),
   },
   gridstack: {
@@ -127,10 +133,10 @@ const Feed = ({ feed }: FeedProps) => {
           )}
 
           <Flex gap="xs">
-            {item.enclosure && (
+            {item.enclosure && item.enclosure.url && (
               <MediaQuery query="(max-width: 1200px)" styles={{ display: 'none' }}>
                 <Image
-                  src={item.enclosure.url ?? undefined}
+                  src={item.enclosure.url}
                   width={140}
                   height={140}
                   radius="md"
@@ -148,9 +154,13 @@ const Feed = ({ feed }: FeedProps) => {
               )}
 
               <Text lineClamp={2}>{item.title}</Text>
-              <Text color="dimmed" size="xs" lineClamp={3}>
-                {item.content}
-              </Text>
+              <Text
+                className={classes.itemContent}
+                color="dimmed"
+                size="xs"
+                lineClamp={widget.properties.textLinesClamp}
+                dangerouslySetInnerHTML={{ __html: item.content }}
+              />
 
               {item.pubDate && (
                 <InfoDisplay title={feed.feed.title} date={formatDate(item.pubDate)} />
@@ -202,7 +212,7 @@ function formatDate(input: string): string {
   }
 }
 
-const useStyles = createStyles(({ colorScheme }) => ({
+const useStyles = createStyles(({ colorScheme, colors, radius, spacing }) => ({
   backgroundImage: {
     position: 'absolute',
     width: '100%',
@@ -215,6 +225,26 @@ const useStyles = createStyles(({ colorScheme }) => ({
     '&:hover': {
       opacity: colorScheme === 'dark' ? 0.4 : 0.3,
       filter: 'blur(40px) brightness(0.7)',
+    },
+  },
+  itemContent: {
+    img: {
+      height: 100,
+      width: 'auto',
+      borderRadius: radius.sm,
+    },
+    blockquote: {
+      marginLeft: 10,
+      marginRight: 10,
+      paddingLeft: spacing.xs,
+      paddingRight: spacing.xs,
+      paddingTop: 1,
+      paddingBottom: 1,
+      borderLeftWidth: 4,
+      borderLeftStyle: 'solid',
+      borderLeftColor: colors.red[5],
+      borderRadius: radius.sm,
+      backgroundColor: colorScheme === 'dark' ? colors.dark[4] : '',
     },
   },
 }));

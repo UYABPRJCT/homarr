@@ -53,5 +53,9 @@ data/configs
 #envfiles
 .env
 
+#Languages other than 'en'
+public/locales/*
+!public/locales/en
+
 #prisma sqlite database
 prisma/db.sqlite
