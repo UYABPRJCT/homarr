@@ -32,17 +32,6 @@ const definition = defineWidget({
     minHeight: 1,
     minWidth: 1,
   },
-  options: {
-    embedUrl: {
-      type: 'text',
-      defaultValue: '',
-    },
-    allowFullScreen: {
-      type: 'switch',
-      defaultValue: false,
-    },
-  },
-  component: IFrameTile,
 });
 
 const IFrameWidget = createWidgetComponent(definition, ({ options }) => {
@@ -75,7 +64,6 @@ const IFrameWidget = createWidgetComponent(definition, ({ options }) => {
         className={classes.iframe}
         src={options.embedUrl}
         title="widget iframe"
-        allow={allowedPermissions.join(' ')}
         allow={allowedPermissions.join(' ')}
       >
         <Text>Your Browser does not support iframes. Please update your browser.</Text>
