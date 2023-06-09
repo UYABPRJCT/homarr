@@ -4,7 +4,10 @@ import { setCookie } from 'cookies-next';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { notifications } from '@mantine/notifications';
+import { IconCheck } from '@tabler/icons-react';
 import { useConfigContext } from '../../config/provider';
+import { api } from '~/utils/api';
 
 export default function ConfigChanger() {
   const router = useRouter();

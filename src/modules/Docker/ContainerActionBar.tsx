@@ -9,69 +9,22 @@ import {
   IconRotateClockwise,
   IconTrash,
 } from '@tabler/icons-react';
-import axios from 'axios';
 import Dockerode, { ContainerInfo } from 'dockerode';
-import { useTranslation } from 'next-i18next';
-import { useState } from 'react';
+import { Trans, useTranslation } from 'next-i18next';
 import { v4 as uuidv4 } from 'uuid';
+import { api } from '~/utils/api';
 import { useConfigContext } from '../../config/provider';
 import { openContextModalGeneric } from '../../tools/mantineModalManagerExtensions';
 import { MatchingImages, ServiceType, tryMatchPort } from '../../tools/types';
 import { AppType } from '../../types/app';
-import { api } from '~/utils/api';
-
-function sendDockerCommand(
-  action: string,
-  containerId: string,
-  containerName: string,
-  reload: () => void,
-  t: (key: string) => string,
-) {
-  notifications.show({
-    id: containerId,
-    loading: true,
-    title: `${t(`actions.${action}.start`)} ${containerName}`,
-    message: undefined,
-    autoClose: false,
-    withCloseButton: false,
-  });
-  axios
-    .get(`/api/docker/container/${containerId}?action=${action}`)
-    .then((res) => {
-      notifications.show({
-        id: containerId,
-        title: containerName,
-        message: `${t(`actions.${action}.end`)} ${containerName}`,
-        icon: <IconCheck />,
-        autoClose: 2000,
-      });
-    })
-    .catch((err) => {
-      notifications.update({
-        id: containerId,
-        color: 'red',
-        title: t('errors.unknownError.title'),
-        message: err.response.data.reason,
-        autoClose: 2000,
-      });
-    })
-    .finally(() => {
-      reload();
-    });
-}
-
-let t: TFunction<'modules/docker', undefined>;
 
 export interface ContainerActionBarProps {
   selected: Dockerode.ContainerInfo[];
   isLoading: boolean;
 }
 
-export default function ContainerActionBar({ selected, reload }: ContainerActionBarProps) {
-  const { t } = useTranslation('modules/docker');
-  const [isLoading, setisLoading] = useState(false);
 export default function ContainerActionBar({ selected, isLoading }: ContainerActionBarProps) {
-  t = useTranslation('modules/docker').t;
+  const { t } = useTranslation('modules/docker');
   const { name: configName, config } = useConfigContext();
   const getLowestWrapper = () => config?.wrappers.sort((a, b) => a.position - b.position)[0];
   const utils = api.useContext();
@@ -235,10 +188,10 @@ const useDockerCommand = (action: 'start' | 'stop' | 'restart' | 'remove') => {
 
   return async (container: ContainerInfo) => {
     const containerName = container.Names[0].substring(1);
-    showNotification({
+    notifications.show({
       id: container.Id,
       loading: true,
-      title: `${t(`actions.${action}.start`)} ${containerName}`,
+      title: <Trans i18nKey={`actions.${action}.start`} values={{ containerName }} />,
       message: undefined,
       autoClose: false,
       withCloseButton: false,
@@ -252,20 +205,20 @@ const useDockerCommand = (action: 'start' | 'stop' | 'restart' | 'remove') => {
         onSuccess() {
           const containerName = container.Names[0].substring(1);
 
-          updateNotification({
+          notifications.update({
             id: container.Id,
             title: containerName,
-            message: `${t(`actions.${action}.end`)} ${containerName}`,
+            message: <Trans i18nKey={`actions.${action}.end`} values={{ containerName }} />,
             icon: <IconCheck />,
             autoClose: 2000,
           });
           utils.docker.all.invalidate();
         },
         onError() {
-          updateNotification({
+          notifications.update({
             id: container.Id,
             color: 'red',
-            title: t('errors.unknownError.title'),
+            title: <Trans i18nKey="errors.unknownError.title" />,
             // TODO: Add error message
             message: undefined,
             autoClose: 2000,

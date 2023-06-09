@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
+import { createTRPCRouter, publicProcedure } from '../trpc';
 
 const dashDotUrlSchema = z.string().url();
 

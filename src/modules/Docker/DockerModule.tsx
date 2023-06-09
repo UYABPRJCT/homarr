@@ -1,17 +1,17 @@
-import { ActionIcon, Drawer, Tooltip } from '@mantine/core';
+import { ActionIcon, Drawer, Tooltip, Text } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
-import { IconBrandDocker } from '@tabler/icons-react';
+import { IconBrandDocker, IconX } from '@tabler/icons-react';
 import Docker from 'dockerode';
 import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { notifications } from '@mantine/notifications';
 import { useCardStyles } from '../../components/layout/useCardStyles';
 import { useConfigContext } from '../../config/provider';
 
+import { env } from '~/env.mjs';
 import { api } from '~/utils/api';
 import ContainerActionBar from './ContainerActionBar';
 import DockerTable from './DockerTable';
-import { env } from '~/env.mjs';
 
 export default function DockerMenuButton(props: any) {
   const [opened, setOpened] = useState(false);
@@ -24,16 +24,6 @@ export default function DockerMenuButton(props: any) {
   });
   const { classes } = useCardStyles(true);
 
-  const dockerEnabled = config?.settings.customization.layout.enabledDocker || false;
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['containers'],
-    queryFn: async () => {
-      const containers = await axios.get('/api/docker/containers');
-      return containers.data;
-    },
-    enabled: dockerEnabled,
-  });
   useHotkeys([['mod+B', () => setOpened(!opened)]]);
 
   const { t } = useTranslation('modules/docker');
@@ -100,7 +90,7 @@ const useDockerContainersQuery = ({
       resetSelection();
     },
     onError() {
-      showNotification({
+      notifications.show({
         autoClose: 1500,
         title: <Text>{t('errors.integrationFailed.title')}</Text>,
         color: 'red',
