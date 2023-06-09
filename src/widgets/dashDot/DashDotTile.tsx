@@ -1,134 +1,61 @@
 import { Center, createStyles, Grid, Stack, Text, Title } from '@mantine/core';
 import { IconUnlink } from '@tabler/icons';
 import { useTranslation } from 'next-i18next';
+import { z } from 'zod';
 import { api } from '~/utils/api';
-import { defineWidget } from '../helper';
-import { IWidget } from '../widgets';
+import { createWidgetComponent, defineWidget, widgetOption } from '../common/definition';
 import { DashDotGraph } from './DashDotGraph';
 
 const definition = defineWidget({
-  id: 'dashdot',
+  sort: 'dashdot',
   icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dashdot.png',
   options: {
-    url: {
-      type: 'text',
+    url: widgetOption.text(z.string().url(), {
       defaultValue: '',
-    },
-    usePercentages: {
-      type: 'switch',
+      nullable: false,
+    }),
+    usePercentages: widgetOption.switch(z.boolean(), {
       defaultValue: false,
-    },
-    columns: {
-      type: 'number',
+    }),
+    columns: widgetOption.number(z.number().min(1).max(2), {
       defaultValue: 2,
-    },
-    graphHeight: {
-      type: 'number',
+    }),
+    graphHeight: widgetOption.number(z.number().step(5), {
       defaultValue: 115,
-      inputProps: {
-        step: 5,
-        stepHoldDelay: 500,
-        stepHoldInterval: 100,
-      },
-    },
-    graphsOrder: {
-      type: 'draggable-list',
-      defaultValue: [
-        {
-          key: 'storage',
-          subValues: {
-            enabled: true,
-            compactView: true,
-            span: 2,
-            multiView: false,
-          },
-        },
-        {
-          key: 'network',
-          subValues: {
-            enabled: true,
-            compactView: true,
-            span: 2,
-          },
-        },
-        {
-          key: 'cpu',
-          subValues: {
-            enabled: true,
-            multiView: false,
-            span: 1,
-          },
-        },
-        {
-          key: 'ram',
-          subValues: {
-            enabled: true,
-            span: 1,
-          },
-        },
-        {
-          key: 'gpu',
-          subValues: {
-            enabled: false,
-            span: 1,
-          },
-        },
-      ],
-      items: {
-        cpu: {
-          enabled: {
-            type: 'switch',
-          },
-          span: {
-            type: 'number',
-          },
-          multiView: {
-            type: 'switch',
-          },
-        },
+      stepHoldDelay: 500,
+      stepHoldInterval: 100,
+    }),
+    graphsOrder: widgetOption.staticDraggableList(
+      {
         storage: {
-          enabled: {
-            type: 'switch',
-          },
-          span: {
-            type: 'number',
-          },
-          compactView: {
-            type: 'switch',
-          },
-          multiView: {
-            type: 'switch',
-          },
-        },
-        ram: {
-          enabled: {
-            type: 'switch',
-          },
-          span: {
-            type: 'number',
-          },
+          enabled: widgetOption.switch(z.boolean(), { defaultValue: true }),
+          compactView: widgetOption.switch(z.boolean(), { defaultValue: true }),
+          span: widgetOption.number(z.number().min(1).max(2), { defaultValue: 2 }),
+          multiView: widgetOption.switch(z.boolean(), { defaultValue: false }),
         },
         network: {
-          enabled: {
-            type: 'switch',
-          },
-          span: {
-            type: 'number',
-          },
-          compactView: {
-            type: 'switch',
-          },
+          enabled: widgetOption.switch(z.boolean(), { defaultValue: true }),
+          compactView: widgetOption.switch(z.boolean(), { defaultValue: true }),
+          span: widgetOption.number(z.number().min(1).max(2), { defaultValue: 2 }),
+        },
+        cpu: {
+          enabled: widgetOption.switch(z.boolean(), { defaultValue: true }),
+          multiView: widgetOption.switch(z.boolean(), { defaultValue: false }),
+          span: widgetOption.number(z.number().min(1).max(2), { defaultValue: 1 }),
+        },
+        ram: {
+          enabled: widgetOption.switch(z.boolean(), { defaultValue: true }),
+          span: widgetOption.number(z.number().min(1).max(2), { defaultValue: 1 }),
         },
         gpu: {
-          enabled: {
-            type: 'switch',
-          },
-          span: {
-            type: 'number',
-          },
+          enabled: widgetOption.switch(z.boolean(), { defaultValue: false }),
+          span: widgetOption.number(z.number().min(1).max(2), { defaultValue: 1 }),
         },
       },
-    },
+      {
+        defaultValue: ['storage', 'network', 'cpu', 'ram', 'gpu'],
+      }
+    ),
   },
   gridstack: {
     minWidth: 2,
@@ -136,20 +63,13 @@ const definition = defineWidget({
     maxWidth: 12,
     maxHeight: 14,
   },
-  component: DashDotTile,
 });
 
-export type IDashDotTile = IWidget<(typeof definition)['id'], typeof definition>;
-
-interface DashDotTileProps {
-  widget: IDashDotTile;
-}
-
-function DashDotTile({ widget }: DashDotTileProps) {
+const DashDotWidget = createWidgetComponent(definition, ({ options }) => {
   const { classes } = useDashDotTileStyles();
   const { t } = useTranslation('modules/dashdot');
 
-  const dashDotUrl = widget.properties.url;
+  const dashDotUrl = options.url;
   const locationProtocol = window.location.protocol;
   const detectedProtocolDowngrade =
     locationProtocol === 'https:' && dashDotUrl.toLowerCase().startsWith('http:');
@@ -173,7 +93,7 @@ function DashDotTile({ widget }: DashDotTileProps) {
     );
   }
 
-  const { graphsOrder, usePercentages, columns, graphHeight } = widget.properties;
+  const { graphsOrder, usePercentages, columns, graphHeight } = options;
 
   return (
     <Stack spacing="xs">
@@ -191,8 +111,12 @@ function DashDotTile({ widget }: DashDotTileProps) {
                     info={info}
                     graph={g.key as any}
                     graphHeight={graphHeight}
-                    isCompact={g.subValues.compactView ?? false}
-                    multiView={g.subValues.multiView ?? false}
+                    isCompact={
+                      g.key === 'storage' || g.key === 'network' ? g.subValues.compactView : false
+                    }
+                    multiView={
+                      g.key === 'storage' || g.key === 'cpu' ? g.subValues.multiView : false
+                    }
                     usePercentages={usePercentages}
                     url={dashDotUrl}
                   />
@@ -203,7 +127,7 @@ function DashDotTile({ widget }: DashDotTileProps) {
       )}
     </Stack>
   );
-}
+});
 
 const useDashDotInfo = ({ dashDotUrl, enabled }: { dashDotUrl: string; enabled: boolean }) =>
   api.dashDot.info.useQuery(
@@ -221,4 +145,4 @@ export const useDashDotTileStyles = createStyles((theme) => ({
   },
 }));
 
-export default definition;
+export default DashDotWidget;

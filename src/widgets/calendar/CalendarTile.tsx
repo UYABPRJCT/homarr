@@ -3,37 +3,36 @@ import { Calendar } from '@mantine/dates';
 import { IconCalendarTime } from '@tabler/icons';
 import { i18n } from 'next-i18next';
 import { useState } from 'react';
-import { constructClientSecretChangesForIntegrations } from '~/server/api/helpers/apps';
-import { mediaIntegrationTypes } from '~/server/api/helpers/integrations';
+import { z } from 'zod';
+import { useDashboard } from '~/pages';
 import { api } from '~/utils/api';
-import { useConfigContext } from '../../config/provider';
-import { defineWidget } from '../helper';
-import { IWidget } from '../widgets';
+import {
+  createWidgetComponent,
+  defineWidget,
+  inferOptionsFromDefinition,
+  widgetOption,
+} from '../common/definition';
 import { CalendarDay } from './CalendarDay';
 import { getBgColorByDateAndTheme } from './bg-calculator';
 import { MediasType } from './type';
 
 const definition = defineWidget({
-  id: 'calendar',
+  sort: 'calendar',
   icon: IconCalendarTime,
   options: {
-    useSonarrv4: {
-      type: 'switch',
+    useSonarrv4: widgetOption.switch(z.boolean(), {
       defaultValue: false,
-    },
-    sundayStart: {
-      type: 'switch',
+    }),
+    sundayStart: widgetOption.switch(z.boolean(), {
       defaultValue: false,
-    },
-    radarrReleaseType: {
-      type: 'select',
-      defaultValue: 'inCinemas',
-      data: [
-        { label: 'In Cinemas', value: 'inCinemas' },
-        { label: 'Physical', value: 'physicalRelease' },
-        { label: 'Digital', value: 'digitalRelease' },
-      ],
-    },
+    }),
+    radarrReleaseType: widgetOption.select(
+      z.enum(['inCinemas', 'physicalRelease', 'digitalRelease']),
+      {
+        defaultValue: 'inCinemas',
+        nullable: false,
+      }
+    ),
   },
   gridstack: {
     minWidth: 2,
@@ -41,37 +40,31 @@ const definition = defineWidget({
     maxWidth: 12,
     maxHeight: 12,
   },
-  component: CalendarTile,
 });
 
-export type ICalendarWidget = IWidget<(typeof definition)['id'], typeof definition>;
-
-interface CalendarTileProps {
-  widget: ICalendarWidget;
-}
-
-function CalendarTile({ widget }: CalendarTileProps) {
+const CalendarWidget = createWidgetComponent(definition, ({ options }) => {
   const { colorScheme } = useMantineTheme();
-  const { name: configName, config } = useConfigContext();
+  const dashboard = useDashboard();
   const [month, setMonth] = useState(new Date());
 
-  const apps = constructClientSecretChangesForIntegrations(
-    config?.apps ?? [],
+  // TODO: Fix this
+  const apps: any[] = []; /* constructClientSecretChangesForIntegrations(
+    onlyItemsFromType(dashboard.groups.flatMap((group) => group.items), 'app'),
     mediaIntegrationTypes
-  );
+  );*/
 
   const { data: medias } = api.calendar.medias.useQuery(
     {
       month: month.getMonth(),
       year: month.getFullYear(),
+      dashboardId: dashboard.id,
       apps,
-      configName: configName!,
       options: {
-        useSonarrv4: widget.properties.useSonarrv4,
+        useSonarrv4: options.useSonarrv4,
       },
     },
     {
-      enabled: apps.length >= 1 && configName !== undefined,
+      enabled: apps.length >= 1,
       staleTime: 1000 * 60 * 60 * 5,
     }
   );
@@ -83,7 +76,7 @@ function CalendarTile({ widget }: CalendarTileProps) {
       onNextMonth={setMonth}
       size="xs"
       locale={i18n?.resolvedLanguage ?? 'en'}
-      firstDayOfWeek={widget.properties.sundayStart ? 0 : 1}
+      firstDayOfWeek={options.sundayStart ? 0 : 1}
       hideWeekdays
       style={{ position: 'relative', top: -10 }}
       date={month}
@@ -116,19 +109,17 @@ function CalendarTile({ widget }: CalendarTileProps) {
         bg: getBgColorByDateAndTheme(colorScheme, date),
       })}
       renderDay={(date) => (
-        <CalendarDay date={date} medias={getReleasedMediasForDate(medias, date, widget)} />
+        <CalendarDay date={date} medias={getReleasedMediasForDate(medias, date, options)} />
       )}
     />
   );
-}
+});
 
 const getReleasedMediasForDate = (
   medias: MediasType | undefined,
   date: Date,
-  widget: ICalendarWidget
+  { radarrReleaseType }: inferOptionsFromDefinition<typeof definition>
 ): MediasType => {
-  const { radarrReleaseType } = widget.properties;
-
   const books =
     medias?.books.filter((b) => new Date(b.releaseDate).toDateString() === date.toDateString()) ??
     [];
@@ -154,4 +145,4 @@ const getReleasedMediasForDate = (
   };
 };
 
-export default definition;
+export default CalendarWidget;

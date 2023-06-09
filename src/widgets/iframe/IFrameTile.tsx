@@ -1,42 +1,44 @@
-import { Center, createStyles, Stack, Title, Text, Container } from '@mantine/core';
+import { Center, Container, Stack, Text, Title, createStyles } from '@mantine/core';
 import { IconBrowser, IconUnlink } from '@tabler/icons';
 import { useTranslation } from 'next-i18next';
-import { defineWidget } from '../helper';
-import { IWidget } from '../widgets';
+import { z } from 'zod';
+import {
+  createWidgetComponent,
+  defineWidget,
+  inferOptionsFromDefinition,
+  widgetOption,
+} from '../common/definition';
 
 const definition = defineWidget({
-  id: 'iframe',
+  sort: 'iframe',
   icon: IconBrowser,
+  options: {
+    embedUrl: widgetOption.text(z.string().url(), {
+      defaultValue: '',
+      nullable: false,
+    }),
+    allowFullScreen: widgetOption.switch(z.boolean(), { defaultValue: false }),
+    allowScrolling: widgetOption.switch(z.boolean(), { defaultValue: true }),
+    allowTransparency: widgetOption.switch(z.boolean(), { defaultValue: false }),
+    allowPayment: widgetOption.switch(z.boolean(), { defaultValue: false }),
+    allowAutoPlay: widgetOption.switch(z.boolean(), { defaultValue: false }),
+    allowMicrophone: widgetOption.switch(z.boolean(), { defaultValue: false }),
+    allowCamera: widgetOption.switch(z.boolean(), { defaultValue: false }),
+    allowGeolocation: widgetOption.switch(z.boolean(), { defaultValue: false }),
+  },
   gridstack: {
     maxHeight: 12,
     maxWidth: 12,
     minHeight: 1,
     minWidth: 1,
   },
-  options: {
-    embedUrl: {
-      type: 'text',
-      defaultValue: '',
-    },
-    allowFullScreen: {
-      type: 'switch',
-      defaultValue: false,
-    },
-  },
-  component: IFrameTile,
 });
 
-export type IIFrameWidget = IWidget<(typeof definition)['id'], typeof definition>;
-
-interface IFrameTileProps {
-  widget: IIFrameWidget;
-}
-
-function IFrameTile({ widget }: IFrameTileProps) {
+const IFrameWidget = createWidgetComponent(definition, ({ options }) => {
   const { t } = useTranslation('modules/iframe');
   const { classes } = useStyles();
 
-  if (!widget.properties.embedUrl) {
+  if (!options.embedUrl) {
     return (
       <Center h="100%">
         <Stack align="center">
@@ -54,19 +56,35 @@ function IFrameTile({ widget }: IFrameTileProps) {
     );
   }
 
+  const allowedPermissions = useAllowedPermissions(options);
+
   return (
     <Container h="100%" w="100%" maw="initial" mah="initial" p={0}>
       <iframe
         className={classes.iframe}
-        src={widget.properties.embedUrl}
+        src={options.embedUrl}
         title="widget iframe"
-        allowFullScreen={widget.properties.allowFullScreen}
+        allow={allowedPermissions.join(' ')}
       >
         <Text>Your Browser does not support iframes. Please update your browser.</Text>
       </iframe>
     </Container>
   );
-}
+});
+
+const useAllowedPermissions = (options: inferOptionsFromDefinition<typeof definition>) => {
+  const permissions: string[] = [];
+
+  if (options.allowTransparency) permissions.push('transparency');
+  if (options.allowFullScreen) permissions.push('fullscreen');
+  if (options.allowPayment) permissions.push('payment');
+  if (options.allowAutoPlay) permissions.push('autoplay');
+  if (options.allowCamera) permissions.push('camera');
+  if (options.allowMicrophone) permissions.push('microphone');
+  if (options.allowGeolocation) permissions.push('geolocation');
+
+  return permissions;
+};
 
 const useStyles = createStyles(({ radius }) => ({
   iframe: {
@@ -79,4 +97,4 @@ const useStyles = createStyles(({ radius }) => ({
   },
 }));
 
-export default definition;
+export default IFrameWidget;

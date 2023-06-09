@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { useConfigContext } from '../../../../config/provider';
 import { GridstackBreakpoints } from '../../../../constants/gridstack-breakpoints';
+import { useDashboard } from '~/pages';
 
 export const useGridstackStore = create<GridstackStoreType>((set, get) => ({
   mainAreaWidth: null,
@@ -27,19 +28,19 @@ export const useNamedWrapperColumnCount = (): 'small' | 'medium' | 'large' | nul
 };
 
 export const useWrapperColumnCount = () => {
-  const { config } = useConfigContext();
+  const dashboard = useDashboard();
 
-  if (!config) {
+  if (!dashboard) {
     return null;
   }
 
   switch (useNamedWrapperColumnCount()) {
     case 'large':
-      return config.settings.customization.gridstack?.columnCountLarge ?? 12;
+      return 12; // TODO: add column count customization
     case 'medium':
-      return config.settings.customization.gridstack?.columnCountMedium ?? 6;
+      return 6; // TODO: add column count customization
     case 'small':
-      return config.settings.customization.gridstack?.columnCountSmall ?? 3;
+      return 3; // TODO: add column count customization
     default:
       return null;
   }

@@ -1,16 +1,11 @@
 import { GridStack } from 'fily-publish-gridstack';
 import { MutableRefObject, RefObject } from 'react';
-import { AppType } from '../../../types/app';
-import Widgets from '../../../widgets';
-import { IWidget, IWidgetDefinition } from '../../../widgets/widgets';
-import { WidgetWrapper } from '../../../widgets/WidgetWrapper';
-import { appTileDefinition } from '../Tiles/Apps/AppTile';
-import { GridstackTileWrapper } from '../Tiles/TileWrapper';
+import { ItemCard } from '../Tiles/Item';
+import { Item } from '../types';
 import { useGridstackStore } from './gridstack/store';
 
 interface WrapperContentProps {
-  apps: AppType[];
-  widgets: IWidget<string, any>[];
+  items: Item[];
   refs: {
     wrapper: RefObject<HTMLDivElement>;
     items: MutableRefObject<Record<string, RefObject<HTMLDivElement>>>;
@@ -18,54 +13,10 @@ interface WrapperContentProps {
   };
 }
 
-export function WrapperContent({ apps, refs, widgets }: WrapperContentProps) {
+export function WrapperContent({ items, refs }: WrapperContentProps) {
   const shapeSize = useGridstackStore((x) => x.currentShapeSize);
 
   if (!shapeSize) return null;
 
-  return (
-    <>
-      {apps?.map((app) => {
-        const { component: TileComponent, ...tile } = appTileDefinition;
-        return (
-          <GridstackTileWrapper
-            id={app.id}
-            type="app"
-            key={app.id}
-            itemRef={refs.items.current[app.id]}
-            {...tile}
-            {...(app.shape[shapeSize]?.location ?? {})}
-            {...(app.shape[shapeSize]?.size ?? {})}
-          >
-            <TileComponent className="grid-stack-item-content" app={app} />
-          </GridstackTileWrapper>
-        );
-      })}
-      {widgets.map((widget) => {
-        const definition = Widgets[widget.type as keyof typeof Widgets] as
-          | IWidgetDefinition
-          | undefined;
-        if (!definition) return null;
-
-        return (
-          <GridstackTileWrapper
-            type="widget"
-            key={widget.id}
-            itemRef={refs.items.current[widget.id]}
-            id={widget.id}
-            {...definition.gridstack}
-            {...widget.shape[shapeSize]?.location}
-            {...widget.shape[shapeSize]?.size}
-          >
-            <WidgetWrapper
-              className="grid-stack-item-content"
-              widget={widget}
-              widgetType={widget.type}
-              WidgetComponent={definition.component}
-            />
-          </GridstackTileWrapper>
-        );
-      })}
-    </>
-  );
+  return items.map((item) => <ItemCard item={item} itemRef={refs.items.current[item.id]} />);
 }

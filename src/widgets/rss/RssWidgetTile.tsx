@@ -19,25 +19,20 @@ import dayjs from 'dayjs';
 import { useTranslation } from 'next-i18next';
 import Link from 'next/link';
 
+import { z } from 'zod';
 import { RouterOutputs, api } from '~/utils/api';
-import { defineWidget } from '../helper';
-import { IWidget } from '../widgets';
+import { createWidgetComponent, defineWidget, widgetOption } from '../common/definition';
 
 const definition = defineWidget({
-  id: 'rss',
+  sort: 'rss',
   icon: IconRss,
   options: {
-    rssFeedUrl: {
-      type: 'multiple-text',
+    rssFeedUrl: widgetOption.multipleText(z.array(z.string()), {
       defaultValue: [] as string[],
-    },
-    refreshInterval: {
-      type: 'slider',
+    }),
+    refreshInterval: widgetOption.slider(z.number().min(15).max(300).step(15), {
       defaultValue: 30,
-      min: 15,
-      max: 300,
-      step: 15,
-    },
+    }),
   },
   gridstack: {
     minWidth: 2,
@@ -45,20 +40,13 @@ const definition = defineWidget({
     maxWidth: 12,
     maxHeight: 12,
   },
-  component: RssTile,
 });
 
-export type IRssWidget = IWidget<(typeof definition)['id'], typeof definition>;
-
-interface RssTileProps {
-  widget: IRssWidget;
-}
-
-function RssTile({ widget }: RssTileProps) {
+const RssWidget = createWidgetComponent(definition, ({ options }) => {
   const { t } = useTranslation('modules/rss');
   const { data, isLoading, isFetching, isError, refetch } = useGetRssFeeds(
-    widget.properties.rssFeedUrl,
-    widget.properties.refreshInterval
+    options.rssFeedUrl,
+    options.refreshInterval
   );
 
   if (!data || isLoading) {
@@ -106,7 +94,7 @@ function RssTile({ widget }: RssTileProps) {
       </ActionIcon>
     </Stack>
   );
-}
+});
 
 interface FeedProps {
   feed: RouterOutputs['rss']['all'][number];
@@ -231,4 +219,4 @@ const useStyles = createStyles(({ colorScheme }) => ({
   },
 }));
 
-export default definition;
+export default RssWidget;

@@ -1,23 +1,22 @@
 import { Center, Group, Skeleton, Stack, Text, Title } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
 import { IconArrowDownRight, IconArrowUpRight, IconCloudRain } from '@tabler/icons';
-import { defineWidget } from '../helper';
-import { IWidget } from '../widgets';
-import { useWeatherForCity } from './useWeatherForCity';
+import { z } from 'zod';
+import { createWidgetComponent, defineWidget, widgetOption } from '../common/definition';
 import { WeatherIcon } from './WeatherIcon';
+import { useWeatherForCity } from './useWeatherForCity';
 
 const definition = defineWidget({
-  id: 'weather',
+  sort: 'weather',
   icon: IconCloudRain,
   options: {
-    displayInFahrenheit: {
-      type: 'switch',
+    displayInFahrenheit: widgetOption.switch(z.boolean(), {
       defaultValue: false,
-    },
-    location: {
-      type: 'text',
+    }),
+    location: widgetOption.text(z.string(), {
       defaultValue: 'Paris',
-    },
+      nullable: false,
+    }),
   },
   gridstack: {
     minWidth: 1,
@@ -25,18 +24,11 @@ const definition = defineWidget({
     maxWidth: 12,
     maxHeight: 12,
   },
-  component: WeatherTile,
 });
 
-export type IWeatherWidget = IWidget<(typeof definition)['id'], typeof definition>;
-
-interface WeatherTileProps {
-  widget: IWeatherWidget;
-}
-
-function WeatherTile({ widget }: WeatherTileProps) {
-  const { data: weather, isLoading, isError } = useWeatherForCity(widget.properties.location);
-  const { width, height, ref } = useElementSize();
+const WeatherWidget = createWidgetComponent(definition, ({ options }) => {
+  const { data: weather, isLoading, isError } = useWeatherForCity(options.location);
+  const { width, ref } = useElementSize();
 
   if (isLoading) {
     return (
@@ -79,31 +71,22 @@ function WeatherTile({ widget }: WeatherTileProps) {
       <Group align="center" position="center" spacing="xs">
         <WeatherIcon code={weather!.current_weather.weathercode} />
         <Title>
-          {getPerferedUnit(
-            weather!.current_weather.temperature,
-            widget.properties.displayInFahrenheit
-          )}
+          {getPerferedUnit(weather!.current_weather.temperature, options.displayInFahrenheit)}
         </Title>
       </Group>
       {width > 200 && (
         <Group noWrap spacing="xs">
           <IconArrowUpRight />
-          {getPerferedUnit(
-            weather!.daily.temperature_2m_max[0],
-            widget.properties.displayInFahrenheit
-          )}
+          {getPerferedUnit(weather!.daily.temperature_2m_max[0], options.displayInFahrenheit)}
           <IconArrowDownRight />
-          {getPerferedUnit(
-            weather!.daily.temperature_2m_min[0],
-            widget.properties.displayInFahrenheit
-          )}
+          {getPerferedUnit(weather!.daily.temperature_2m_min[0], options.displayInFahrenheit)}
         </Group>
       )}
     </Stack>
   );
-}
+});
 
 const getPerferedUnit = (value: number, isFahrenheit = false): string =>
   isFahrenheit ? `${(value * (9 / 5) + 32).toFixed(1)}°F` : `${value.toFixed(1)}°C`;
 
-export default definition;
+export default WeatherWidget;

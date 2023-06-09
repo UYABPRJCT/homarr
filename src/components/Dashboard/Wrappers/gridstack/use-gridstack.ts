@@ -1,17 +1,17 @@
 import { GridStack, GridStackNode } from 'fily-publish-gridstack';
-import { createRef, MutableRefObject, RefObject, useEffect, useMemo, useRef } from 'react';
+import { MutableRefObject, RefObject, createRef, useEffect, useMemo, useRef } from 'react';
+import { useDashboard } from '~/pages';
 import { useConfigContext } from '../../../../config/provider';
 import { useConfigStore } from '../../../../config/store';
 import { AppType } from '../../../../types/app';
-import { AreaType } from '../../../../types/area';
 import { IWidget } from '../../../../widgets/widgets';
 import { useEditModeStore } from '../../Views/useEditModeStore';
-import { initializeGridstack, TileWithUnknownLocation } from './init-gridstack';
+import { Item, ItemGroup } from '../../types';
+import { TileWithUnknownLocation, initializeGridstack } from './init-gridstack';
 import { useGridstackStore, useWrapperColumnCount } from './store';
 
 interface UseGristackReturnType {
-  apps: AppType[];
-  widgets: IWidget<string, any>[];
+  items: Item[];
   refs: {
     wrapper: RefObject<HTMLDivElement>;
     items: MutableRefObject<Record<string, RefObject<HTMLDivElement>>>;
@@ -20,11 +20,12 @@ interface UseGristackReturnType {
 }
 
 export const useGridstack = (
-  areaType: 'wrapper' | 'category' | 'sidebar',
+  groupType: ItemGroup['type'],
   areaId: string
 ): UseGristackReturnType => {
   const isEditMode = useEditModeStore((x) => x.enabled);
   const { config, configVersion, name: configName } = useConfigContext();
+  const dashboard = useDashboard();
   const updateConfig = useConfigStore((x) => x.updateConfig);
   // define reference for wrapper - is used to calculate the width of the wrapper
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -44,38 +45,20 @@ export const useGridstack = (
 
   const items = useMemo(
     () =>
-      config?.apps.filter(
-        (x) =>
-          x.area.type === areaType &&
-          (x.area.type === 'sidebar'
-            ? x.area.properties.location === areaId
-            : x.area.properties.id === areaId)
-      ) ?? [],
+      dashboard.groups.find((group) => group.type === groupType && group.id === areaId)?.items ??
+      [],
     [configVersion, config?.apps.length]
   );
-  const widgets = useMemo(() => {
-    if (!config) return [];
-    return config.widgets.filter(
-      (w) =>
-        w.area.type === areaType &&
-        (w.area.type === 'sidebar'
-          ? w.area.properties.location === areaId
-          : w.area.properties.id === areaId)
-    );
-  }, [configVersion, config?.widgets.length]);
 
   // define items in itemRefs for easy access and reference to items
-  if (Object.keys(itemRefs.current).length !== items.length + (widgets ?? []).length) {
+  if (Object.keys(itemRefs.current).length !== items.length) {
     items.forEach(({ id }: { id: keyof typeof itemRefs.current }) => {
-      itemRefs.current[id] = itemRefs.current[id] || createRef();
-    });
-    (widgets ?? []).forEach(({ id }) => {
       itemRefs.current[id] = itemRefs.current[id] || createRef();
     });
   }
 
   useEffect(() => {
-    if (areaType === 'sidebar') return;
+    if (groupType === 'sidebar') return;
     const widgetWidth = mainAreaWidth / wrapperColumnCount;
     // widget width is used to define sizes of gridstack items within global.scss
     root.style.setProperty('--gridstack-widget-width', widgetWidth.toString());
@@ -144,7 +127,7 @@ export const useGridstack = (
         if (!itemType || !itemId) return;
 
         // Updates the config and defines the new position and wrapper of the item
-        updateConfig(
+        /*updateConfig(
           configName,
           (previous) => {
             const currentItem =
@@ -153,16 +136,16 @@ export const useGridstack = (
                 : previous.widgets.find((x) => x.id === itemId);
             if (!currentItem) return previous;
 
-            if (areaType === 'sidebar') {
+            if (groupType === 'sidebar') {
               currentItem.area = {
-                type: areaType,
+                type: groupType,
                 properties: {
                   location: areaId as 'right' | 'left',
                 },
               };
             } else {
               currentItem.area = {
-                type: areaType,
+                type: groupType,
                 properties: {
                   id: areaId,
                 },
@@ -227,7 +210,7 @@ export const useGridstack = (
               )
             );
           }
-        );
+        );*/
       }
     : () => {};
 
@@ -240,13 +223,12 @@ export const useGridstack = (
 
     const tilesWithUnknownLocation: TileWithUnknownLocation[] = [];
     initializeGridstack(
-      areaType,
+      groupType,
       wrapperRef,
       gridRef,
       itemRefs,
       areaId,
       items,
-      widgets ?? [],
       isEditMode,
       wrapperColumnCount,
       shapeSize,
@@ -256,8 +238,8 @@ export const useGridstack = (
         onAdd,
       }
     );
-    if (!configName) return removeEventHandlers;
-    updateConfig(configName, (prev) => ({
+    //if (!configName) return removeEventHandlers;
+    /*updateConfig(configName, (prev) => ({
       ...prev,
       apps: prev.apps.map((app) => {
         const currentUnknownLocation = tilesWithUnknownLocation.find(
@@ -305,13 +287,12 @@ export const useGridstack = (
           },
         };
       }),
-    }));
+    }));*/
     return removeEventHandlers;
-  }, [items, wrapperRef.current, widgets, wrapperColumnCount]);
+  }, [items, wrapperRef.current, wrapperColumnCount]);
 
   return {
-    apps: items,
-    widgets: widgets ?? [],
+    items,
     refs: {
       items: itemRefs,
       wrapper: wrapperRef,

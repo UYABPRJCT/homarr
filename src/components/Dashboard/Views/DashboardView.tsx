@@ -1,14 +1,13 @@
 import { Group, Stack } from '@mantine/core';
 import { useEffect, useMemo, useRef } from 'react';
-import { useConfigContext } from '../../../config/provider';
+import { isSidebarEnabled, useDashboard } from '~/pages';
 import { useResize } from '../../../hooks/use-resize';
 import { useScreenLargerThan } from '../../../hooks/useScreenLargerThan';
-import { CategoryType } from '../../../types/category';
-import { WrapperType } from '../../../types/wrapper';
 import { DashboardCategory } from '../Wrappers/Category/Category';
 import { DashboardSidebar } from '../Wrappers/Sidebar/Sidebar';
 import { DashboardWrapper } from '../Wrappers/Wrapper/Wrapper';
 import { useGridstackStore } from '../Wrappers/gridstack/store';
+import { excludeItemsFromType } from '../types';
 
 export const DashboardView = () => {
   const wrappers = useWrapperItems();
@@ -25,9 +24,9 @@ export const DashboardView = () => {
         {isReady &&
           wrappers.map((item) =>
             item.type === 'category' ? (
-              <DashboardCategory key={item.id} category={item as unknown as CategoryType} />
+              <DashboardCategory key={item.id} category={item} />
             ) : (
-              <DashboardWrapper key={item.id} wrapper={item as WrapperType} />
+              <DashboardWrapper key={item.id} wrapper={item} />
             )
           )}
       </Stack>
@@ -57,29 +56,25 @@ const usePrepareGridstack = () => {
 };
 
 const useSidebarVisibility = () => {
-  const layoutSettings = useConfigContext()?.config?.settings.customization.layout;
+  const dashboard = useDashboard();
+  const isLeftSidebarEnabled = isSidebarEnabled(dashboard, 'left');
+  const isRightSidebarEnabled = isSidebarEnabled(dashboard, 'right');
   const screenLargerThanMd = useScreenLargerThan('md'); // For smaller screens mobile ribbons are displayed with drawers
 
   const isScreenSizeUnknown = typeof screenLargerThanMd === 'undefined';
 
   return {
-    right: layoutSettings?.enabledRightSidebar && screenLargerThanMd,
-    left: layoutSettings?.enabledLeftSidebar && screenLargerThanMd,
+    right: isRightSidebarEnabled && screenLargerThanMd,
+    left: isLeftSidebarEnabled && screenLargerThanMd,
     isLoading: isScreenSizeUnknown,
   };
 };
 
 const useWrapperItems = () => {
-  const { config } = useConfigContext();
+  const dashboard = useDashboard();
 
   return useMemo(
-    () =>
-      config
-        ? [
-            ...config.categories.map((c) => ({ ...c, type: 'category' })),
-            ...config.wrappers.map((w) => ({ ...w, type: 'wrapper' })),
-          ].sort((a, b) => a.position - b.position)
-        : [],
-    [config?.categories, config?.wrappers]
+    () => excludeItemsFromType(dashboard.groups, 'sidebar').sort((a, b) => a.index - b.index),
+    [dashboard.groups]
   );
 };

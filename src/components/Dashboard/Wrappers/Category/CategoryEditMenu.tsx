@@ -1,19 +1,19 @@
 import { ActionIcon, Menu } from '@mantine/core';
 import {
   IconDots,
-  IconTransitionTop,
-  IconTransitionBottom,
-  IconRowInsertTop,
-  IconRowInsertBottom,
   IconEdit,
+  IconRowInsertBottom,
+  IconRowInsertTop,
+  IconTransitionBottom,
+  IconTransitionTop,
   IconTrash,
 } from '@tabler/icons';
 import { useConfigContext } from '../../../../config/provider';
-import { CategoryType } from '../../../../types/category';
+import { Category } from './Category';
 import { useCategoryActions } from './useCategoryActions';
 
 interface CategoryEditMenuProps {
-  category: CategoryType;
+  category: Category;
 }
 
 export const CategoryEditMenu = ({ category }: CategoryEditMenuProps) => {

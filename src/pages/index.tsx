@@ -76,3 +76,6 @@ export const DashboardProvider = ({ dashboard, children }: DashboardProviderProp
   if (!dashboard) return <span>Loading...</span>;
   return <DashboardContext.Provider value={{ dashboard }}>{children}</DashboardContext.Provider>;
 };
+
+export const isSidebarEnabled = (dashboard: Dashboard, position: 'left' | 'right'): boolean =>
+  dashboard.groups.some((x) => x.type === 'sidebar' && x.position === position);

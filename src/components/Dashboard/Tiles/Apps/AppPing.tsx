@@ -5,20 +5,21 @@ import { useTranslation } from 'next-i18next';
 import { api } from '~/utils/api';
 import { useConfigContext } from '../../../../config/provider';
 import { AppType } from '../../../../types/app';
+import { AppItem } from '../../types';
+import { useDashboard } from '~/pages';
 
 interface AppPingProps {
-  app: AppType;
+  app: AppItem;
 }
 
 export const AppPing = ({ app }: AppPingProps) => {
   const { t } = useTranslation('modules/ping');
   const { config } = useConfigContext();
-  const active =
-    (config?.settings.customization.layout.enabledPing && app.network.enabledStatusChecker) ??
-    false;
+  const dashboard = useDashboard();
+  const active = dashboard.isPingEnabled; // TODO: maybe check if app is enabled?
   const { data, isLoading } = api.ping.url.useQuery(
     {
-      url: app.url,
+      url: app.internalUrl,
     },
     {
       select: (data) => ({
@@ -60,7 +61,7 @@ export const AppPing = ({ app }: AppPingProps) => {
   );
 };
 
-const getIsOk = (app: AppType, status: number) => {
+const getIsOk = (app: AppItem, status: number) => {
   if (app.network.okStatus === undefined || app.network.statusCodes.length >= 1) {
     Consola.log('Using new status codes');
     return app.network.statusCodes.includes(status.toString());

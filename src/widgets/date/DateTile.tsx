@@ -3,18 +3,17 @@ import { useElementSize } from '@mantine/hooks';
 import { IconClock } from '@tabler/icons';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import { z } from 'zod';
 import { useSetSafeInterval } from '../../hooks/useSetSafeInterval';
-import { defineWidget } from '../helper';
-import { IWidget } from '../widgets';
+import { createWidgetComponent, defineWidget, widgetOption } from '../common/definition';
 
 const definition = defineWidget({
-  id: 'date',
+  sort: 'date',
   icon: IconClock,
   options: {
-    display24HourFormat: {
-      type: 'switch',
+    display24HourFormat: widgetOption.switch(z.boolean(), {
       defaultValue: false,
-    },
+    }),
   },
   gridstack: {
     minWidth: 1,
@@ -22,19 +21,12 @@ const definition = defineWidget({
     maxWidth: 12,
     maxHeight: 12,
   },
-  component: DateTile,
 });
 
-export type IDateWidget = IWidget<(typeof definition)['id'], typeof definition>;
-
-interface DateTileProps {
-  widget: IDateWidget;
-}
-
-function DateTile({ widget }: DateTileProps) {
+const DateWidget = createWidgetComponent(definition, ({ options }) => {
   const date = useDateState();
-  const formatString = widget.properties.display24HourFormat ? 'HH:mm' : 'h:mm A';
-  const { width, height, ref } = useElementSize();
+  const formatString = options.display24HourFormat ? 'HH:mm' : 'h:mm A';
+  const { width, ref } = useElementSize();
 
   return (
     <Stack ref={ref} spacing="xs" justify="space-around" align="center" style={{ height: '100%' }}>
@@ -42,7 +34,7 @@ function DateTile({ widget }: DateTileProps) {
       {width > 200 && <Text size="lg">{dayjs(date).format('dddd, MMMM D')}</Text>}
     </Stack>
   );
-}
+});
 
 /**
  * State which updates when the minute is changing
@@ -80,4 +72,4 @@ const getMsUntilNextMinute = () => {
   return nextMinute.getTime() - now.getTime();
 };
 
-export default definition;
+export default DateWidget;

@@ -2,26 +2,21 @@ import { Box, Stack, Title, UnstyledButton } from '@mantine/core';
 import { createStyles } from '@mantine/styles';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { AppType } from '../../../../types/app';
-import { useCardStyles } from '../../../layout/useCardStyles';
 import { useEditModeStore } from '../../Views/useEditModeStore';
+import { AppItem } from '../../types';
 import { HomarrCardWrapper } from '../HomarrCardWrapper';
 import { BaseTileProps } from '../type';
 import { AppMenu } from './AppMenu';
 import { AppPing } from './AppPing';
 
 interface AppTileProps extends BaseTileProps {
-  app: AppType;
+  app: AppItem;
 }
 
 export const AppTile = ({ className, app }: AppTileProps) => {
   const isEditMode = useEditModeStore((x) => x.enabled);
 
   const { cx, classes } = useStyles();
-
-  const {
-    classes: { card: cardClass },
-  } = useCardStyles(false);
 
   function Inner() {
     return (
@@ -53,7 +48,7 @@ export const AppTile = ({ className, app }: AppTileProps) => {
             style={{
               objectFit: 'contain',
             }}
-            src={app.appearance.iconUrl}
+            src={app.iconSource}
             alt={app.name}
             whileHover={{
               scale: 1.2,
@@ -65,10 +60,12 @@ export const AppTile = ({ className, app }: AppTileProps) => {
     );
   }
 
+  const href = app.externalUrl.length > 0 ? app.externalUrl : app.internalUrl;
+
   return (
     <HomarrCardWrapper className={className}>
       <AppMenu app={app} />
-      {!app.url || isEditMode ? (
+      {!app.externalUrl || isEditMode ? (
         <UnstyledButton
           className={classes.button}
           style={{ pointerEvents: isEditMode ? 'none' : 'auto' }}
@@ -79,8 +76,8 @@ export const AppTile = ({ className, app }: AppTileProps) => {
         <UnstyledButton
           style={{ pointerEvents: isEditMode ? 'none' : 'auto' }}
           component={Link}
-          href={app.behaviour.externalUrl.length > 0 ? app.behaviour.externalUrl : app.url}
-          target={app.behaviour.isOpeningNewTab ? '_blank' : '_self'}
+          href={href}
+          target={app.openInNewTab ? '_blank' : '_self'}
           className={cx(classes.button)}
         >
           <Inner />

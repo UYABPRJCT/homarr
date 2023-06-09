@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   MultiSelectProps,
   NumberInputProps,
@@ -8,21 +7,21 @@ import {
   TextInputProps,
 } from '@mantine/core';
 import { TablerIcon } from '@tabler/icons';
-
-import { AreaType } from '../types/area';
-import { ShapeType } from '../types/shape';
+import React from 'react';
 
 // Type of widgets which are saved to config
 export type IWidget<TKey extends string, TDefinition extends IWidgetDefinition> = {
   id: string;
   type: TKey;
-  properties: {
+  options: {
     [key in keyof TDefinition['options']]: MakeLessSpecific<
       TDefinition['options'][key]['defaultValue']
     >;
   };
-  area: AreaType;
-  shape: ShapeType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };
 
 // Makes the type less specific

@@ -3,15 +3,15 @@ import { MutableRefObject, RefObject } from 'react';
 import { AppType } from '../../../../types/app';
 import { ShapeType } from '../../../../types/shape';
 import { IWidget } from '../../../../widgets/widgets';
+import { Item, ItemGroup } from '../../types';
 
 export const initializeGridstack = (
-  areaType: 'wrapper' | 'category' | 'sidebar',
+  groupType: ItemGroup['type'],
   wrapperRef: RefObject<HTMLDivElement>,
   gridRef: MutableRefObject<GridStack | undefined>,
   itemRefs: MutableRefObject<Record<string, RefObject<HTMLDivElement>>>,
   areaId: string,
-  items: AppType[],
-  widgets: IWidget<string, any>[],
+  items: Item[],
   isEditMode: boolean,
   wrapperColumnCount: number,
   shapeSize: 'sm' | 'md' | 'lg',
@@ -23,14 +23,14 @@ export const initializeGridstack = (
 ) => {
   if (!wrapperRef.current) return;
   // calculates the currently available count of columns
-  const columnCount = areaType === 'sidebar' ? 2 : wrapperColumnCount;
-  const minRow = areaType !== 'sidebar' ? 1 : Math.floor(wrapperRef.current.offsetHeight / 128);
+  const columnCount = groupType === 'sidebar' ? 2 : wrapperColumnCount;
+  const minRow = groupType !== 'sidebar' ? 1 : Math.floor(wrapperRef.current.offsetHeight / 128);
   // initialize gridstack
   const newGrid = gridRef;
   newGrid.current = GridStack.init(
     {
       column: columnCount,
-      margin: areaType === 'sidebar' ? 5 : 10,
+      margin: groupType === 'sidebar' ? 5 : 10,
       cellHeight: 128,
       float: true,
       alwaysShowResizeHandle: 'mobile',
@@ -41,7 +41,7 @@ export const initializeGridstack = (
       animate: false,
     },
     // selector of the gridstack item (it's eather category or wrapper)
-    `.grid-stack-${areaType}[data-${areaType}='${areaId}']`
+    `.grid-stack-${groupType}[data-${groupType}='${areaId}']`
   );
   const grid = newGrid.current;
   // Must be used to update the column count after the initialization
@@ -65,7 +65,8 @@ export const initializeGridstack = (
 
   grid.batchUpdate();
   grid.removeAll(false);
-  items.forEach(({ id, shape }) => {
+  // TODO: add this but with new schema
+  /*items.forEach(({ id, shape }) => {
     const item = itemRefs.current[id]?.current;
     setAttributesFromShape(item, shape[shapeSize]);
     item && grid.makeWidget(item as HTMLDivElement);
@@ -76,19 +77,7 @@ export const initializeGridstack = (
         tilesWithUnknownLocation.push({ x, y, w, h, type: 'app', id });
       }
     }
-  });
-  widgets.forEach(({ id, shape }) => {
-    const item = itemRefs.current[id]?.current;
-    setAttributesFromShape(item, shape[shapeSize]);
-    item && grid.makeWidget(item as HTMLDivElement);
-    if (!shape[shapeSize] && item) {
-      const gridItemElement = item as GridItemHTMLElement;
-      if (gridItemElement.gridstackNode) {
-        const { x, y, w, h } = gridItemElement.gridstackNode;
-        tilesWithUnknownLocation.push({ x, y, w, h, type: 'widget', id });
-      }
-    }
-  });
+  });*/
   grid.batchUpdate(false);
 };
 

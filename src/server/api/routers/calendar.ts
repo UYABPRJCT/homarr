@@ -18,7 +18,7 @@ export const calendarRouter = createTRPCRouter({
       z.object({
         month: z.number().min(1).max(12),
         year: z.number().min(1900).max(2300),
-        configName: configNameSchema,
+        dashboardId: configNameSchema,
         apps: z.array(generateClientAppSchema(mediaIntegrationTypes)),
         options: z.object({
           useSonarrv4: z.boolean().optional().default(false),
@@ -26,7 +26,7 @@ export const calendarRouter = createTRPCRouter({
       })
     )
     .query(async ({ input }) => {
-      const config = getConfigData(input.configName);
+      const config = getConfigData(input.dashboardId);
 
       if (!config) {
         throw new TRPCError({

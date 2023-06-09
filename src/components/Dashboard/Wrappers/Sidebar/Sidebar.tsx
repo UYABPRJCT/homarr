@@ -28,7 +28,7 @@ interface DashboardSidebarInnerProps {
 
 // Is Required because of the gridstack main area width.
 const SidebarInner = ({ location }: DashboardSidebarInnerProps) => {
-  const { refs, apps, widgets } = useGridstack('sidebar', location);
+  const { items, refs } = useGridstack('sidebar', location);
 
   const minRow = useMinRowForFullHeight(refs.wrapper);
 
@@ -46,7 +46,7 @@ const SidebarInner = ({ location }: DashboardSidebarInnerProps) => {
       // eslint-disable-next-line react/no-unknown-property
       gs-min-row={minRow}
     >
-      <WrapperContent apps={apps} refs={refs} widgets={widgets} />
+      <WrapperContent items={items} refs={refs} />
     </div>
   );
 };

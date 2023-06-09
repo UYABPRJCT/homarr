@@ -1,47 +1,46 @@
 import { ComponentType } from 'react';
+import { WidgetItem } from '~/components/Dashboard/types';
 import Widgets from '.';
 import { HomarrCardWrapper } from '../components/Dashboard/Tiles/HomarrCardWrapper';
 import { WidgetsMenu } from '../components/Dashboard/Tiles/Widgets/WidgetsMenu';
 import ErrorBoundary from './boundary';
-import { IWidget } from './widgets';
 
 interface WidgetWrapperProps {
-  widgetType: string;
-  widget: IWidget<string, any>;
+  widgetSort: string;
+  widget: WidgetItem;
   className: string;
-  WidgetComponent: ComponentType<{ widget: IWidget<string, any> }>;
+  WidgetComponent: ComponentType<{ widget: WidgetItem }>;
 }
 
 // If a property has no value, set it to the default value
-const useWidget = <T extends IWidget<string, any>>(widget: T): T => {
-  const definition = Widgets[widget.type as keyof typeof Widgets];
+const useWidget = <T extends WidgetItem>(widget: T): T => {
+  const definition = Widgets[widget.sort as keyof typeof Widgets];
 
-  const newProps = { ...widget.properties };
+  const newProps = { ...widget.options };
 
-  Object.entries(definition.options).forEach(([key, option]) => {
+  Object.entries(definition.options).forEach(([key, property]) => {
     if (newProps[key] == null) {
-      newProps[key] = option.defaultValue;
+      newProps[key] = property.defaultValue;
     }
   });
 
   return {
     ...widget,
-    properties: newProps,
+    options: newProps,
   };
 };
 
 export const WidgetWrapper = ({
-  widgetType,
+  widgetSort,
   widget,
   className,
   WidgetComponent,
 }: WidgetWrapperProps) => {
   const widgetWithDefaultProps = useWidget(widget);
-
   return (
     <ErrorBoundary>
       <HomarrCardWrapper className={className}>
-        <WidgetsMenu integration={widgetType} widget={widgetWithDefaultProps} />
+        <WidgetsMenu integration={widgetSort} widget={widgetWithDefaultProps} />
         <WidgetComponent widget={widgetWithDefaultProps} />
       </HomarrCardWrapper>
     </ErrorBoundary>

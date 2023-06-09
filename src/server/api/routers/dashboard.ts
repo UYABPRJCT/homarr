@@ -85,7 +85,7 @@ async function generateDashboardOutputById(id: string, prisma: PrismaClient) {
 
 export const dashboardRouter = createTRPCRouter({
   default: publicProcedure.query(async ({ ctx }) => {
-    const dashboard = await generateDashboardOutputById('clinddcsy0000vqhciuvxsx3s', ctx.prisma);
+    const dashboard = await generateDashboardOutputById('clhgj9ogl0000vqrgtkkldyx9', ctx.prisma);
 
     if (!dashboard) {
       throw new TRPCError({

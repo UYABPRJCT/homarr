@@ -1,17 +1,13 @@
-import { useConfigContext } from '../../../../config/provider';
-import { useConfigStore } from '../../../../config/store';
 import { openContextModalGeneric } from '../../../../tools/mantineModalManagerExtensions';
 import { AppType } from '../../../../types/app';
+import { AppItem } from '../../types';
 import { GenericTileMenu } from '../GenericTileMenu';
 
 interface TileMenuProps {
-  app: AppType;
+  app: AppItem;
 }
 
 export const AppMenu = ({ app }: TileMenuProps) => {
-  const { config, name: configName } = useConfigContext();
-  const { updateConfig } = useConfigStore();
-
   const handleClickEdit = () => {
     openContextModalGeneric<{ app: AppType; allowAppNamePropagation: boolean }>({
       modal: 'editApp',
