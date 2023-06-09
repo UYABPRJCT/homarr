@@ -12,7 +12,7 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue, useHotkeys } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
-import { IconBrandYoutube, IconDownload, IconMovie, IconSearch } from '@tabler/icons';
+import { IconBrandYoutube, IconDownload, IconMovie, IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { constructClientSecretChangesForIntegrations } from '~/server/api/helpers/apps';

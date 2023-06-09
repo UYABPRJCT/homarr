@@ -1,6 +1,6 @@
 import { Stack, Text, Title } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
-import { IconClock } from '@tabler/icons';
+import { IconClock } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { useSetSafeInterval } from '../../hooks/useSetSafeInterval';
@@ -34,7 +34,7 @@ interface DateTileProps {
 function DateTile({ widget }: DateTileProps) {
   const date = useDateState();
   const formatString = widget.properties.display24HourFormat ? 'HH:mm' : 'h:mm A';
-  const { width, height, ref } = useElementSize();
+  const { width, ref } = useElementSize();
 
   return (
     <Stack ref={ref} spacing="xs" justify="space-around" align="center" style={{ height: '100%' }}>

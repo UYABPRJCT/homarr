@@ -11,7 +11,7 @@ import {
 } from '@mantine/core';
 import { useForm, zodResolver } from '@mantine/form';
 import { showNotification, updateNotification } from '@mantine/notifications';
-import { IconCheck, IconX } from '@tabler/icons';
+import { IconCheck, IconX } from '@tabler/icons-react';
 import type { GetServerSideProps, InferGetServerSidePropsType, NextPage } from 'next';
 import { signIn } from 'next-auth/react';
 import { useTranslation } from 'next-i18next';

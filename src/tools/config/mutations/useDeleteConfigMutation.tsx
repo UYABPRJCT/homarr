@@ -1,5 +1,5 @@
 import { showNotification } from '@mantine/notifications';
-import { IconX } from '@tabler/icons';
+import { IconX } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { api } from '~/utils/api';
 

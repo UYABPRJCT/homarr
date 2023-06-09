@@ -1,10 +1,10 @@
-import { ActionIcon, Drawer, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Drawer, Tooltip } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
-import { showNotification } from '@mantine/notifications';
-import { IconBrandDocker, IconX } from '@tabler/icons';
+import { IconBrandDocker } from '@tabler/icons-react';
 import Docker from 'dockerode';
 import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useCardStyles } from '../../components/layout/useCardStyles';
 import { useConfigContext } from '../../config/provider';
 
@@ -23,6 +23,17 @@ export default function DockerMenuButton(props: any) {
     resetSelection: () => setSelection([]),
   });
   const { classes } = useCardStyles(true);
+
+  const dockerEnabled = config?.settings.customization.layout.enabledDocker || false;
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['containers'],
+    queryFn: async () => {
+      const containers = await axios.get('/api/docker/containers');
+      return containers.data;
+    },
+    enabled: dockerEnabled,
+  });
   useHotkeys([['mod+B', () => setOpened(!opened)]]);
 
   const { t } = useTranslation('modules/docker');

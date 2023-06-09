@@ -1,5 +1,5 @@
 import { Button, Group } from '@mantine/core';
-import { showNotification, updateNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import {
   IconCheck,
   IconPlayerPlay,
@@ -8,18 +8,57 @@ import {
   IconRefresh,
   IconRotateClockwise,
   IconTrash,
-} from '@tabler/icons';
+} from '@tabler/icons-react';
 import axios from 'axios';
 import Dockerode, { ContainerInfo } from 'dockerode';
 import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
-import { TFunction } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 import { useConfigContext } from '../../config/provider';
 import { openContextModalGeneric } from '../../tools/mantineModalManagerExtensions';
 import { MatchingImages, ServiceType, tryMatchPort } from '../../tools/types';
 import { AppType } from '../../types/app';
 import { api } from '~/utils/api';
+
+function sendDockerCommand(
+  action: string,
+  containerId: string,
+  containerName: string,
+  reload: () => void,
+  t: (key: string) => string,
+) {
+  notifications.show({
+    id: containerId,
+    loading: true,
+    title: `${t(`actions.${action}.start`)} ${containerName}`,
+    message: undefined,
+    autoClose: false,
+    withCloseButton: false,
+  });
+  axios
+    .get(`/api/docker/container/${containerId}?action=${action}`)
+    .then((res) => {
+      notifications.show({
+        id: containerId,
+        title: containerName,
+        message: `${t(`actions.${action}.end`)} ${containerName}`,
+        icon: <IconCheck />,
+        autoClose: 2000,
+      });
+    })
+    .catch((err) => {
+      notifications.update({
+        id: containerId,
+        color: 'red',
+        title: t('errors.unknownError.title'),
+        message: err.response.data.reason,
+        autoClose: 2000,
+      });
+    })
+    .finally(() => {
+      reload();
+    });
+}
 
 let t: TFunction<'modules/docker', undefined>;
 
@@ -28,6 +67,9 @@ export interface ContainerActionBarProps {
   isLoading: boolean;
 }
 
+export default function ContainerActionBar({ selected, reload }: ContainerActionBarProps) {
+  const { t } = useTranslation('modules/docker');
+  const [isLoading, setisLoading] = useState(false);
 export default function ContainerActionBar({ selected, isLoading }: ContainerActionBarProps) {
   t = useTranslation('modules/docker').t;
   const { name: configName, config } = useConfigContext();
@@ -40,6 +82,14 @@ export default function ContainerActionBar({ selected, isLoading }: ContainerAct
   const refresh = () => {
     utils.docker.all.invalidate();
   };
+
+  if (process.env.DISABLE_EDIT_MODE === 'true') {
+    return null;
+  }
+
+  if (process.env.DISABLE_EDIT_MODE === 'true') {
+    return null;
+  }
 
   return (
     <Group spacing="xs">
