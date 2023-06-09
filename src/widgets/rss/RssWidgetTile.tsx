@@ -79,7 +79,7 @@ const RssWidget = createWidgetComponent(definition, ({ options }) => {
     <Stack h="100%">
       <ScrollArea className="scroll-area-w100" w="100%" mt="sm" mb="sm">
         {data.map((feed, index) => (
-          <Feed key={index} feed={feed} />
+          <Feed key={index} feed={feed} textLinesClamp={options.textLinesClamp} />
         ))}
       </ScrollArea>
 
@@ -104,9 +104,10 @@ const RssWidget = createWidgetComponent(definition, ({ options }) => {
 
 interface FeedProps {
   feed: RouterOutputs['rss']['all'][number];
+  textLinesClamp: number;
 }
 
-const Feed = ({ feed }: FeedProps) => {
+const Feed = ({ feed, textLinesClamp }: FeedProps) => {
   const { classes } = useStyles();
 
   if (!feed.success) return null;
@@ -158,7 +159,7 @@ const Feed = ({ feed }: FeedProps) => {
                 className={classes.itemContent}
                 color="dimmed"
                 size="xs"
-                lineClamp={widget.properties.textLinesClamp}
+                lineClamp={textLinesClamp}
                 dangerouslySetInnerHTML={{ __html: item.content }}
               />
 
