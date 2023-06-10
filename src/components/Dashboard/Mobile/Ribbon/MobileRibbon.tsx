@@ -1,26 +1,24 @@
 import { ActionIcon, createStyles, Space } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import { useConfigContext } from '../../../../config/provider';
+import { isSidebarEnabled, useDashboard } from '~/pages';
 import { useScreenLargerThan } from '../../../../hooks/useScreenLargerThan';
 import { MobileRibbonSidebarDrawer } from './MobileRibbonSidebarDrawer';
 
 export const MobileRibbons = () => {
   const { classes, cx } = useStyles();
-  const { config } = useConfigContext();
+  const dashboard = useDashboard();
   const [openedRight, rightSidebar] = useDisclosure(false);
   const [openedLeft, leftSidebar] = useDisclosure(false);
   const screenLargerThanMd = useScreenLargerThan('md');
 
-  if (screenLargerThanMd || !config) {
+  if (screenLargerThanMd || !dashboard) {
     return <></>;
   }
 
-  const layoutSettings = config.settings.customization.layout;
-
   return (
     <div className={classes.root}>
-      {layoutSettings.enabledLeftSidebar ? (
+      {isSidebarEnabled(dashboard, 'left') ? (
         <>
           <ActionIcon
             onClick={leftSidebar.open}
@@ -39,7 +37,7 @@ export const MobileRibbons = () => {
         <Space />
       )}
 
-      {layoutSettings.enabledRightSidebar ? (
+      {isSidebarEnabled(dashboard, 'right') ? (
         <>
           <ActionIcon
             onClick={rightSidebar.open}

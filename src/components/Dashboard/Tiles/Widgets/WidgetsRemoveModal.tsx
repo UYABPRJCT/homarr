@@ -2,7 +2,6 @@ import React from 'react';
 import { Button, Group, Stack, Text } from '@mantine/core';
 import { ContextModalProps } from '@mantine/modals';
 import { Trans, useTranslation } from 'next-i18next';
-import { useConfigContext } from '../../../../config/provider';
 import { useConfigStore } from '../../../../config/store';
 
 export type WidgetsRemoveModalInnerProps = {
@@ -16,8 +15,6 @@ export const WidgetsRemoveModal = ({
   innerProps,
 }: ContextModalProps<WidgetsRemoveModalInnerProps>) => {
   const { t } = useTranslation([`modules/${innerProps.widgetType}`, 'common']);
-  const { name: configName } = useConfigContext();
-  if (!configName) return null;
   const updateConfig = useConfigStore((x) => x.updateConfig);
   const handleDeletion = () => {
     updateConfig(

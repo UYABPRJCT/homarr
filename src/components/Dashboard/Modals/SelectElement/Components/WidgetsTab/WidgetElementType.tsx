@@ -3,11 +3,12 @@ import { showNotification } from '@mantine/notifications';
 import { IconChecks, Icon } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { v4 as uuidv4 } from 'uuid';
-import { useConfigContext } from '../../../../../../config/provider';
 import { useConfigStore } from '../../../../../../config/store';
 import { IWidget, IWidgetDefinition } from '../../../../../../widgets/widgets';
 import { useEditModeStore } from '../../../../Views/useEditModeStore';
 import { GenericAvailableElementType } from '../Shared/GenericElementType';
+import { useDashboard } from '~/pages';
+import { onlyItemsFromType } from '~/components/Dashboard/types';
 
 interface WidgetElementTypeProps {
   id: string;
@@ -19,16 +20,15 @@ interface WidgetElementTypeProps {
 export const WidgetElementType = ({ id, image, disabled, widget }: WidgetElementTypeProps) => {
   const { closeModal } = useModals();
   const { t } = useTranslation(`modules/${id}`);
-  const { name: configName, config } = useConfigContext();
   const updateConfig = useConfigStore((x) => x.updateConfig);
   const isEditMode = useEditModeStore((x) => x.enabled);
+  const dashboard = useDashboard();
 
-  if (!configName) return null;
-
-  const getLowestWrapper = () => config?.wrappers.sort((a, b) => a.position - b.position)[0];
+  const getLowestWrapper = () =>
+    onlyItemsFromType(dashboard.groups, 'wrapper')?.sort((a, b) => a.index - b.index)[0];
 
   const handleAddition = async () => {
-    updateConfig(
+    /*updateConfig(
       configName,
       (prev) => ({
         ...prev,
@@ -85,7 +85,7 @@ export const WidgetElementType = ({ id, image, disabled, widget }: WidgetElement
       }),
       true,
       !isEditMode
-    );
+    );*/
     closeModal('selectElement');
     showNotification({
       title: t('descriptor.name'),

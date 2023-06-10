@@ -1,5 +1,5 @@
-import { Alert, Button, Group, Popover, Stack, Tabs, Text, ThemeIcon } from '@mantine/core';
-import { useForm } from '@mantine/form';
+import { Button, Group, Popover, Stack, Tabs, Text, ThemeIcon } from '@mantine/core';
+import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { ContextModalProps } from '@mantine/modals';
 import {
@@ -12,17 +12,17 @@ import {
 } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
-import { useConfigContext } from '../../../../config/provider';
-import { useConfigStore } from '../../../../config/store';
-import { AppType } from '../../../../types/app';
+import { z } from 'zod';
 import { DebouncedImage } from '../../../IconSelector/DebouncedImage';
-import { useEditModeStore } from '../../Views/useEditModeStore';
+import { useDashboardStore } from '../../store';
+import { AppItem } from '../../types';
 import { AppearanceTab } from './Tabs/AppereanceTab/AppereanceTab';
 import { BehaviourTab } from './Tabs/BehaviourTab/BehaviourTab';
 import { GeneralTab } from './Tabs/GeneralTab/GeneralTab';
 import { IntegrationTab } from './Tabs/IntegrationTab/IntegrationTab';
 import { NetworkTab } from './Tabs/NetworkTab/NetworkTab';
 import { EditAppModalTab } from './Tabs/type';
+import { v4 } from 'uuid';
 
 const appUrlRegex =
   '(https?://(?:www.|(?!www))\\[?[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\]?.[^\\s]{2,}|www.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9].[^\\s]{2,}|https?://(?:www.|(?!www))\\[?[a-zA-Z0-9]+\\]?.[^\\s]{2,}|www.[a-zA-Z0-9]+.[^\\s]{2,})';
@@ -31,75 +31,73 @@ export const EditAppModal = ({
   context,
   id,
   innerProps,
-}: ContextModalProps<{ app: AppType; allowAppNamePropagation: boolean }>) => {
+}: ContextModalProps<{ app: AppItem; allowAppNamePropagation: boolean }>) => {
   const { t } = useTranslation(['layout/modals/add-app', 'common']);
-  const { name: configName, config } = useConfigContext();
-  const updateConfig = useConfigStore((store) => store.updateConfig);
-  const { enabled: isEditMode } = useEditModeStore();
+  const save = useDashboardStore((x) => x.save);
   const [allowAppNamePropagation, setAllowAppNamePropagation] = useState<boolean>(
     innerProps.allowAppNamePropagation
   );
 
-  const form = useForm<AppType>({
+  const form = useForm<AppItem>({
     initialValues: innerProps.app,
-    validate: {
-      name: (name) => (!name ? 'Name is required' : null),
-      url: (url) => {
-        if (!url) {
-          return 'Url is required';
-        }
-
-        if (!url.match(appUrlRegex)) {
-          return 'Value is not a valid url';
-        }
-
-        return null;
-      },
-      appearance: {
-        iconUrl: (url: string) => {
-          if (url.length < 1) {
-            return 'This field is required';
-          }
-
-          return null;
-        },
-      },
-      behaviour: {
-        externalUrl: (url: string) => {
-          if (url === undefined || url.length < 1) {
-            return null;
-          }
-
-          if (!url.match(appUrlRegex)) {
-            return 'Uri override is not a valid uri';
-          }
-
-          return null;
-        },
-      },
-    },
+    validate: zodResolver(
+      z.object({
+        name: z
+          .string({
+            required_error: 'Name is required',
+          })
+          .nonempty({
+            message: 'Name is required',
+          }),
+        internalUrl: z
+          .string({
+            required_error: 'Url is required',
+          })
+          .regex(new RegExp(appUrlRegex), {
+            message: 'Value is not a valid url',
+          }),
+        iconSource: z
+          .string({
+            required_error: 'This field is required',
+          })
+          .nonempty({
+            message: 'This field is required',
+          }),
+        externalUrl: z
+          .string()
+          .regex(new RegExp(appUrlRegex), {
+            message: 'Uri override is not a valid uri',
+          })
+          .optional(),
+      })
+    ),
     validateInputOnChange: true,
   });
 
-  const onSubmit = (values: AppType) => {
-    if (!configName) {
-      return;
-    }
+  const onSubmit = (values: AppItem) => {
+    save((dashboard) => ({
+      ...dashboard,
+      groups: dashboard.groups.map((group) => ({
+        ...group,
+        items:
+          values.id === undefined && values.groupId === group.id
+            ? [
+                ...group.items,
+                {
+                  ...values,
+                  id: v4(),
+                },
+              ]
+            : group.items.map((item) => {
+                if (item.id !== values.id) return item;
 
-    updateConfig(
-      configName,
-      (previousConfig) => ({
-        ...previousConfig,
-        apps: [
-          ...previousConfig.apps.filter((x) => x.id !== values.id),
-          {
-            ...values,
-          },
-        ],
-      }),
-      true,
-      !isEditMode
-    );
+                return {
+                  ...item,
+                  ...values,
+                };
+              }),
+      })),
+    }));
 
     // also close the parent modal
     context.closeAll();
@@ -113,8 +111,8 @@ export const EditAppModal = ({
 
   const validationErrors = Object.keys(form.errors);
 
-  const ValidationErrorIndicator = ({ keys }: { keys: string[] }) => {
-    const relevantErrors = validationErrors.filter((x) => keys.includes(x));
+  const ValidationErrorIndicator = ({ keys }: { keys: (keyof AppItem)[] }) => {
+    const relevantErrors = validationErrors.filter((x) => keys.includes(x as keyof AppItem));
 
     return (
       <ThemeIcon
@@ -130,15 +128,8 @@ export const EditAppModal = ({
 
   return (
     <>
-      {configName === undefined ||
-        (config === undefined && (
-          <Alert color="red">
-            There was an unexpected problem loading the configuration. Functionality might be
-            restricted. Please report this incident.
-          </Alert>
-        ))}
       <Stack spacing={0} align="center" my="lg">
-        <DebouncedImage src={form.values.appearance.iconUrl} width={120} height={120} />
+        <DebouncedImage src={form.values.iconSource ?? ''} width={120} height={120} />
 
         <Text align="center" weight="bold" size="lg" mt="md">
           {form.values.name ?? 'New App'}
@@ -160,14 +151,14 @@ export const EditAppModal = ({
           >
             <Tabs.List grow>
               <Tabs.Tab
-                rightSection={<ValidationErrorIndicator keys={['name', 'url']} />}
+                rightSection={<ValidationErrorIndicator keys={['name', 'internalUrl']} />}
                 icon={<IconAdjustments size={14} />}
                 value="general"
               >
                 {t('tabs.general')}
               </Tabs.Tab>
               <Tabs.Tab
-                rightSection={<ValidationErrorIndicator keys={['behaviour.externalUrl']} />}
+                rightSection={<ValidationErrorIndicator keys={['externalUrl']} />}
                 icon={<IconClick size={14} />}
                 value="behaviour"
               >
@@ -181,7 +172,7 @@ export const EditAppModal = ({
                 {t('tabs.network')}
               </Tabs.Tab>
               <Tabs.Tab
-                rightSection={<ValidationErrorIndicator keys={['appearance.iconUrl']} />}
+                rightSection={<ValidationErrorIndicator keys={['iconSource']} />}
                 icon={<IconBrush size={14} />}
                 value="appearance"
               >

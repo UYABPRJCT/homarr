@@ -1,11 +1,8 @@
 import { GridStack, GridStackNode } from 'fily-publish-gridstack';
 import { MutableRefObject, RefObject, createRef, useEffect, useMemo, useRef } from 'react';
 import { useDashboard } from '~/pages';
-import { useConfigContext } from '../../../../config/provider';
-import { useConfigStore } from '../../../../config/store';
-import { AppType } from '../../../../types/app';
-import { IWidget } from '../../../../widgets/widgets';
 import { useEditModeStore } from '../../Views/useEditModeStore';
+import { useDashboardStore } from '../../store';
 import { Item, ItemGroup } from '../../types';
 import { TileWithUnknownLocation, initializeGridstack } from './init-gridstack';
 import { useGridstackStore, useWrapperColumnCount } from './store';
@@ -26,7 +23,7 @@ export const useGridstack = (
   const isEditMode = useEditModeStore((x) => x.enabled);
   //const { config, configVersion, name: configName } = useConfigContext();
   const dashboard = useDashboard();
-  const updateConfig = useConfigStore((x) => x.updateConfig);
+  const save = useDashboardStore((x) => x.save);
   // define reference for wrapper - is used to calculate the width of the wrapper
   const wrapperRef = useRef<HTMLDivElement>(null);
   // references to the diffrent items contained in the gridstack
@@ -72,145 +69,67 @@ export const useGridstack = (
 
   const onChange = isEditMode
     ? (changedNode: GridStackNode) => {
-        //if (!configName) return;
-
         const itemType = changedNode.el?.getAttribute('data-type');
         const itemId = changedNode.el?.getAttribute('data-id');
         if (!itemType || !itemId) return;
 
         // Updates the config and defines the new position of the item
-        /*updateConfig(configName, (previous) => {
-          const currentItem =
-            itemType === 'app'
-              ? previous.apps.find((x) => x.id === itemId)
-              : previous.widgets.find((x) => x.id === itemId);
-          if (!currentItem) return previous;
-
-          currentItem.shape[shapeSize] = {
-            location: {
-              x: changedNode.x!,
-              y: changedNode.y!,
-            },
-            size: {
-              width: changedNode.w!,
-              height: changedNode.h!,
-            },
-          };
-
-          if (itemType === 'app') {
-            return {
-              ...previous,
-              apps: [
-                ...previous.apps.filter((x) => x.id !== itemId),
-                { ...(currentItem as AppType) },
-              ],
-            };
-          }
-
-          return {
-            ...previous,
-            widgets: [
-              ...previous.widgets.filter((x) => x.id !== itemId),
-              { ...(currentItem as IWidget<string, any>) },
-            ],
-          };
-        });*/
+        save((dashboard) => ({
+          ...dashboard,
+          groups: dashboard.groups.map((group) => ({
+            ...group,
+            items: group.items.map((item) =>
+              itemId === item.id
+                ? {
+                    ...item,
+                    positionX: changedNode.x!,
+                    positionY: changedNode.y!,
+                    width: changedNode.w!,
+                    height: changedNode.h!,
+                  }
+                : item
+            ),
+          })),
+        }));
       }
     : () => {};
 
   const onAdd = isEditMode
     ? (addedNode: GridStackNode) => {
-        //if (!configName) return;
-
         const itemType = addedNode.el?.getAttribute('data-type');
         const itemId = addedNode.el?.getAttribute('data-id');
         if (!itemType || !itemId) return;
+        if (items.find((x) => x.id === itemId)) return;
 
-        // Updates the config and defines the new position and wrapper of the item
-        /*updateConfig(
-          configName,
-          (previous) => {
-            const currentItem =
-              itemType === 'app'
-                ? previous.apps.find((x) => x.id === itemId)
-                : previous.widgets.find((x) => x.id === itemId);
-            if (!currentItem) return previous;
+        // Updates the config and defines the new position and wrapper of the ite
+        save((dashboard) => {
+          const previousItem = dashboard.groups
+            .flatMap((group) => group.items)
+            .find((x) => x.id === itemId);
 
-            if (groupType === 'sidebar') {
-              currentItem.area = {
-                type: groupType,
-                properties: {
-                  location: areaId as 'right' | 'left',
-                },
-              };
-            } else {
-              currentItem.area = {
-                type: groupType,
-                properties: {
-                  id: areaId,
-                },
-              };
-            }
-
-            currentItem.shape[shapeSize] = {
-              location: {
-                x: addedNode.x!,
-                y: addedNode.y!,
-              },
-              size: {
-                width: addedNode.w!,
-                height: addedNode.h!,
-              },
-            };
-
-            if (itemType === 'app') {
-              return {
-                ...previous,
-                apps: [
-                  ...previous.apps.filter((x) => x.id !== itemId),
-                  { ...(currentItem as AppType) },
-                ],
-              };
-            }
-
-            return {
-              ...previous,
-              widgets: [
-                ...previous.widgets.filter((x) => x.id !== itemId),
-                { ...(currentItem as IWidget<string, any>) },
-              ],
-            };
-          },
-          (prev, curr) => {
-            const isApp = itemType === 'app';
-
-            if (isApp) {
-              const currItem = curr.apps.find((x) => x.id === itemId);
-              const prevItem = prev.apps.find((x) => x.id === itemId);
-              if (!currItem || !prevItem) return false;
-
-              return (
-                currItem.area.type !== prevItem.area.type ||
-                Object.entries(currItem.area.properties).some(
-                  ([key, value]) =>
-                    prevItem.area.properties[key as keyof AreaType['properties']] !== value
-                )
-              );
-            }
-
-            const currItem = curr.widgets.find((x) => x.id === itemId);
-            const prevItem = prev.widgets.find((x) => x.id === itemId);
-            if (!currItem || !prevItem) return false;
-
-            return (
-              currItem.area.type !== prevItem.area.type ||
-              Object.entries(currItem.area.properties).some(
-                ([key, value]) =>
-                  prevItem.area.properties[key as keyof AreaType['properties']] !== value
-              )
-            );
-          }
-        );*/
+          if (!previousItem) return dashboard;
+          return {
+            ...dashboard,
+            groups: dashboard.groups.map((group) =>
+              group.id === groupId
+                ? {
+                    ...group,
+                    items: group.items.concat({
+                      ...previousItem,
+                      positionX: addedNode.x!,
+                      positionY: addedNode.y!,
+                      width: addedNode.w!,
+                      height: addedNode.h!,
+                      groupId,
+                    }),
+                  }
+                : {
+                    ...group,
+                    items: group.items.filter((item) => item.id !== itemId),
+                  }
+            ),
+          };
+        });
       }
     : () => {};
 

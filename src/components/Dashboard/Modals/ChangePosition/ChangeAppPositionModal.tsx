@@ -1,6 +1,5 @@
 import { SelectItem } from '@mantine/core';
 import { closeModal, ContextModalProps } from '@mantine/modals';
-import { useConfigContext } from '../../../../config/provider';
 import { useConfigStore } from '../../../../config/store';
 import { AppType } from '../../../../types/app';
 import { useGridstackStore, useWrapperColumnCount } from '../../Wrappers/gridstack/store';
@@ -15,18 +14,15 @@ export const ChangeAppPositionModal = ({
   context,
   innerProps,
 }: ContextModalProps<ChangeAppPositionModalInnerProps>) => {
-  const { name: configName } = useConfigContext();
   const updateConfig = useConfigStore((x) => x.updateConfig);
   const shapeSize = useGridstackStore((x) => x.currentShapeSize);
 
   if (!shapeSize) return null;
 
   const handleSubmit = (x: number, y: number, width: number, height: number) => {
-    if (!configName) {
-      return;
-    }
+    // TODO: add action
 
-    updateConfig(
+    /*updateConfig(
       configName,
       (previousConfig) => ({
         ...previousConfig,
@@ -42,7 +38,7 @@ export const ChangeAppPositionModal = ({
         ],
       }),
       true
-    );
+    );*/
     context.closeModal(id);
   };
 

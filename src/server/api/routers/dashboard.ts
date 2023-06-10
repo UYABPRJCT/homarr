@@ -272,6 +272,7 @@ export const dashboardRouter = createTRPCRouter({
     const itemsToUpdate = bodyItems.filter((item) => dbItems.some((i) => i.id === item.id));
     // eslint-disable-next-line no-restricted-syntax
     for (const item of itemsToUpdate) {
+      console.log(item.id);
       transactionActions.push(
         ctx.prisma.item.update({
           where: {

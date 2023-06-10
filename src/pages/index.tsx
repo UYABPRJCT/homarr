@@ -1,8 +1,9 @@
 import { GetServerSidePropsContext } from 'next';
 
 import { createServerSideHelpers } from '@trpc/react-query/server';
-import { ReactNode, createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 import superjson from 'superjson';
+import { useDashboardStore } from '~/components/Dashboard/store';
 import { appRouter } from '~/server/api/root';
 import { createTRPCContext } from '~/server/api/trpc';
 import { RouterOutputs, api } from '~/utils/api';
@@ -37,44 +38,21 @@ export async function getServerSideProps({
 }
 
 export default function HomePage() {
-  const utils = api.useContext();
-  const dashboard = utils.dashboard.default.getData();
-  //useInitConfig(config);
-
   return (
-    <DashboardProvider dashboard={dashboard}>
-      <Layout>
-        <Dashboard />
-        <LoadConfigComponent />
-      </Layout>
-    </DashboardProvider>
+    <Layout>
+      <Dashboard />
+      <LoadConfigComponent />
+    </Layout>
   );
 }
 
 type Dashboard = RouterOutputs['dashboard']['default'];
 
-type DashboardContextType = {
-  dashboard: Dashboard;
-};
-
-const DashboardContext = createContext<DashboardContextType | null>(null);
-
 export const useDashboard = () => {
-  const context = useContext(DashboardContext);
-  if (!context) {
-    throw new Error('useDashboard must be used within a DashboardProvider');
-  }
-  return context.dashboard;
-};
-
-type DashboardProviderProps = {
-  dashboard: Dashboard | undefined;
-  children: JSX.Element;
-};
-
-export const DashboardProvider = ({ dashboard, children }: DashboardProviderProps) => {
-  if (!dashboard) return <span>Loading...</span>;
-  return <DashboardContext.Provider value={{ dashboard }}>{children}</DashboardContext.Provider>;
+  const utils = api.useContext();
+  const dashboard = utils.dashboard.default.getData()!;
+  const clientDashboard = useDashboardStore((x) => x.dashboard);
+  return clientDashboard ?? dashboard;
 };
 
 export const isSidebarEnabled = (dashboard: Dashboard, position: 'left' | 'right'): boolean =>

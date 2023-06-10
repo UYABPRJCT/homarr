@@ -2,11 +2,9 @@ import { Indicator, Tooltip } from '@mantine/core';
 import Consola from 'consola';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'next-i18next';
-import { api } from '~/utils/api';
-import { useConfigContext } from '../../../../config/provider';
-import { AppType } from '../../../../types/app';
-import { AppItem } from '../../types';
 import { useDashboard } from '~/pages';
+import { api } from '~/utils/api';
+import { AppItem } from '../../types';
 
 interface AppPingProps {
   app: AppItem;
@@ -14,7 +12,6 @@ interface AppPingProps {
 
 export const AppPing = ({ app }: AppPingProps) => {
   const { t } = useTranslation('modules/ping');
-  const { config } = useConfigContext();
   const dashboard = useDashboard();
   const active = dashboard.isPingEnabled; // TODO: maybe check if app is enabled?
   const { data, isLoading } = api.ping.url.useQuery(

@@ -2,16 +2,16 @@ import {
   Accordion,
   ActionIcon,
   Box,
-  Menu,
-  Title,
-  Text,
-  Stack,
   List,
+  Menu,
+  Stack,
+  Text,
+  Title,
   createStyles,
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
-import { IconDotsVertical, IconShare3 } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
+import { IconDotsVertical, IconShare3 } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { useDashboard } from '~/pages';
 import { useCardStyles } from '../../../layout/useCardStyles';
@@ -41,9 +41,10 @@ export const DashboardCategory = ({ category }: DashboardCategoryProps) => {
   });
 
   const handleMenuClick = () => {
+    const apps = onlyItemsFromType(category.items, 'app');
     for (let i = 0; i < apps.length; i += 1) {
       const app = apps[i];
-      const popUp = window.open(app.url, app.id);
+      const popUp = window.open(app.externalUrl, app.id);
 
       if (popUp === null) {
         modals.openConfirmModal({

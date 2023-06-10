@@ -18,5 +18,11 @@ export function WrapperContent({ items, refs }: WrapperContentProps) {
 
   if (!shapeSize) return null;
 
-  return items.map((item) => <ItemCard item={item} itemRef={refs.items.current[item.id]} />);
+  return (
+    <>
+      {items.map((item) => (
+        <ItemCard item={item} itemRef={refs.items.current[item.id]} />
+      ))}
+    </>
+  );
 }

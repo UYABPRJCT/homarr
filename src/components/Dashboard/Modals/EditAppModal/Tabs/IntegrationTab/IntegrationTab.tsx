@@ -2,15 +2,17 @@ import { Alert, Divider, Tabs, Text } from '@mantine/core';
 import { UseFormReturnType } from '@mantine/form';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { Trans, useTranslation } from 'next-i18next';
-import { AppType } from '../../../../../../types/app';
+import { AppItem } from '~/components/Dashboard/types';
 import { IntegrationSelector } from './Components/InputElements/IntegrationSelector';
 import { IntegrationOptionsRenderer } from './Components/IntegrationOptionsRenderer/IntegrationOptionsRenderer';
 
 interface IntegrationTabProps {
-  form: UseFormReturnType<AppType, (values: AppType) => AppType>;
+  form: UseFormReturnType<AppItem, (values: AppItem) => AppItem>;
 }
 
 export const IntegrationTab = ({ form }: IntegrationTabProps) => {
+  return null;
+  /*
   const { t } = useTranslation('layout/modals/add-app');
   const hasIntegrationSelected = form.values.integration?.type;
 
@@ -33,5 +35,5 @@ export const IntegrationTab = ({ form }: IntegrationTabProps) => {
         </>
       )}
     </Tabs.Panel>
-  );
+  );*/ // TODO: Fix this
 };

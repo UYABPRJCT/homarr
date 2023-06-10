@@ -2,13 +2,13 @@ import { ActionIcon, Button, Group, Text, Title, Tooltip } from '@mantine/core';
 import { useHotkeys, useWindowEvent } from '@mantine/hooks';
 import { hideNotification, showNotification } from '@mantine/notifications';
 import { IconEditCircle, IconEditCircleOff } from '@tabler/icons-react';
-import axios from 'axios';
 import Consola from 'consola';
-import { getCookie } from 'cookies-next';
 import { Trans, useTranslation } from 'next-i18next';
-import { useConfigContext } from '../../../../../config/provider';
 import { useScreenSmallerThan } from '../../../../../hooks/useScreenSmallerThan';
 
+import { useDashboardStore } from '~/components/Dashboard/store';
+import { useDashboard } from '~/pages';
+import { api } from '~/utils/api';
 import { useEditModeStore } from '../../../../Dashboard/Views/useEditModeStore';
 import { useNamedWrapperColumnCount } from '../../../../Dashboard/Wrappers/gridstack/store';
 import { useCardStyles } from '../../../useCardStyles';
@@ -18,6 +18,10 @@ const beforeUnloadEventText = 'Exit the edit mode to save your changes';
 
 export const ToggleEditModeAction = () => {
   const { enabled, toggleEditMode } = useEditModeStore();
+  const dashboard = useDashboard();
+  const setDashboard = useDashboardStore((x) => x.set);
+  const clientDashboard = useDashboardStore((x) => x.dashboard);
+  const { mutateAsync } = api.dashboard.update.useMutation();
   const namedWrapperColumnCount = useNamedWrapperColumnCount();
   const { t } = useTranslation(['layout/header/actions/toggle-edit-mode', 'common']);
   const translatedSize =
@@ -26,10 +30,17 @@ export const ToggleEditModeAction = () => {
       : t('common:loading');
 
   const smallerThanSm = useScreenSmallerThan('sm');
-  const { config } = useConfigContext();
   const { classes } = useCardStyles(true);
 
-  useHotkeys([['mod+E', toggleEditMode]]);
+  useHotkeys([
+    [
+      'mod+E',
+      () => {
+        toggleEditMode();
+        setDashboard(dashboard);
+      },
+    ],
+  ]);
 
   useWindowEvent('beforeunload', (event: BeforeUnloadEvent) => {
     if (enabled) {
@@ -41,12 +52,13 @@ export const ToggleEditModeAction = () => {
     return undefined;
   });
 
-  const toggleButtonClicked = () => {
+  const toggleButtonClicked = async () => {
     toggleEditMode();
-    if (enabled || config === undefined || config?.schemaVersion === undefined) {
-      const configName = getCookie('config-name')?.toString() ?? 'default';
-      axios.put(`/api/configs/${configName}`, { ...config });
-      Consola.log('Saved config to server', configName);
+    setDashboard(dashboard);
+    if (enabled || clientDashboard !== null) {
+      await mutateAsync(clientDashboard!);
+
+      Consola.log('Updated dashboard ', dashboard.id);
       hideNotification('toggle-edit-mode');
     } else if (!enabled) {
       showNotification({

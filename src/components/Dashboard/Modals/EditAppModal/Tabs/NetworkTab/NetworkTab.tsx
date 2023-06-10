@@ -3,12 +3,15 @@ import { UseFormReturnType } from '@mantine/form';
 import { useTranslation } from 'next-i18next';
 import { StatusCodes } from '../../../../../../tools/acceptableStatusCodes';
 import { AppType } from '../../../../../../types/app';
+import { AppItem } from '~/components/Dashboard/types';
 
 interface NetworkTabProps {
-  form: UseFormReturnType<AppType, (values: AppType) => AppType>;
+  form: UseFormReturnType<AppItem, (values: AppItem) => AppItem>;
 }
 
 export const NetworkTab = ({ form }: NetworkTabProps) => {
+  return null;
+  /*
   const { t } = useTranslation('layout/modals/add-app');
   const acceptableStatusCodes = (form.values.network.statusCodes ?? ['200']).map((x) =>
     x.toString()
@@ -36,5 +39,5 @@ export const NetworkTab = ({ form }: NetworkTabProps) => {
         />
       )}
     </Tabs.Panel>
-  );
+  );*/ // TODO: fix this
 };

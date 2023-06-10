@@ -2,13 +2,13 @@ import { Flex, Tabs } from '@mantine/core';
 import { UseFormReturnType } from '@mantine/form';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect, useRef } from 'react';
-import { AppType } from '../../../../../../types/app';
 import { IconSelector } from '../../../../../IconSelector/IconSelector';
 
+import { AppItem } from '~/components/Dashboard/types';
 import { api } from '~/utils/api';
 
 interface AppearanceTabProps {
-  form: UseFormReturnType<AppType, (values: AppType) => AppType>;
+  form: UseFormReturnType<AppItem, (values: AppItem) => AppItem>;
   disallowAppNameProgagation: () => void;
   allowAppNamePropagation: boolean;
 }
@@ -41,12 +41,12 @@ export const AppearanceTab = ({
     <Tabs.Panel value="appearance" pt="lg">
       <Flex gap={5}>
         <IconSelector
-          defaultValue={form.values.appearance.iconUrl}
+          defaultValue={form.values.iconSource ?? ''}
           onChange={(value) => {
-            form.setFieldValue('appearance.iconUrl', value);
+            form.setFieldValue('iconSource', value!);
             disallowAppNameProgagation();
           }}
-          value={form.values.appearance.iconUrl}
+          value={form.values.iconSource}
           ref={iconSelectorRef}
         />
       </Flex>

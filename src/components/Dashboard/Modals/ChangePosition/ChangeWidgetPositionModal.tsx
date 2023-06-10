@@ -1,6 +1,5 @@
 import { SelectItem } from '@mantine/core';
 import { closeModal, ContextModalProps } from '@mantine/modals';
-import { useConfigContext } from '../../../../config/provider';
 import { useConfigStore } from '../../../../config/store';
 import widgets from '../../../../widgets';
 import { WidgetChangePositionModalInnerProps } from '../../Tiles/Widgets/WidgetsMenu';
@@ -12,7 +11,6 @@ export const ChangeWidgetPositionModal = ({
   id,
   innerProps,
 }: ContextModalProps<WidgetChangePositionModalInnerProps>) => {
-  const { name: configName } = useConfigContext();
   const updateConfig = useConfigStore((x) => x.updateConfig);
   const shapeSize = useGridstackStore((x) => x.currentShapeSize);
 
@@ -21,11 +19,11 @@ export const ChangeWidgetPositionModal = ({
   }
 
   const handleSubmit = (x: number, y: number, width: number, height: number) => {
-    if (!configName) {
+    /*if (!configName) {
       return;
-    }
+    }*/
 
-    updateConfig(
+    /*updateConfig(
       configName,
       (prev) => {
         const currentWidget = prev.widgets.find((x) => x.id === innerProps.widgetId);
@@ -46,7 +44,7 @@ export const ChangeWidgetPositionModal = ({
         };
       },
       true
-    );
+    );*/
     context.closeModal(id);
   };
 

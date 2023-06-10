@@ -22,7 +22,7 @@ export const excludeItemsFromType = <TItem extends WithType, TType extends TItem
 export const onlyItemsFromType = <TItem extends WithType, TType extends TItem['type']>(
   items: TItem[],
   type: TType
-) => items.filter((item): item is RemoveType<TItem, TType> => item.type === type);
+) => items.filter((item): item is OnlyOfType<TItem, TType> => item.type === type);
 
 export type Dashboard = RouterOutputs['dashboard']['byId'];
 export type ItemGroup = Dashboard['groups'][number];

@@ -22,7 +22,6 @@ import {
   IconFile,
   IconKey,
   IconLanguage,
-  IconSchema,
   IconVersions,
   IconVocabulary,
   IconWorldWww,
@@ -32,7 +31,6 @@ import { InitOptions } from 'i18next';
 import { i18n, Trans, useTranslation } from 'next-i18next';
 import Image from 'next/image';
 import { ReactNode } from 'react';
-import { useConfigContext } from '../../../../config/provider';
 import { useConfigStore } from '../../../../config/store';
 import { useEditModeInformationStore } from '../../../../hooks/useEditModeInformation';
 import { usePackageAttributesStore } from '../../../../tools/client/zustands/usePackageAttributesStore';
@@ -203,7 +201,6 @@ const useInformationTableItems = (newVersionAvailable?: string): InformationTabl
   const { editModeEnabled } = useEditModeInformationStore();
   const { primaryColor } = useColorTheme();
 
-  const { configVersion } = useConfigContext();
   const { configs } = useConfigStore();
 
   let items: InformationTableItem[] = [];
@@ -261,15 +258,6 @@ const useInformationTableItems = (newVersionAvailable?: string): InformationTabl
   }
 
   items = [
-    {
-      icon: <IconSchema size={20} />,
-      label: 'configurationSchemaVersion',
-      content: (
-        <Badge variant="light" color={primaryColor}>
-          {configVersion}
-        </Badge>
-      ),
-    },
     {
       icon: <IconFile size={20} />,
       label: 'configurationsCount',

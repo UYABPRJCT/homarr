@@ -1,12 +1,11 @@
 import { Group, Space, Stack, Text, UnstyledButton } from '@mantine/core';
-import { closeModal } from '@mantine/modals';
-import { showNotification } from '@mantine/notifications';
 import { IconBox, IconBoxAlignTop, IconStack } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'next-i18next';
 import { ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useConfigContext } from '../../../../../../config/provider';
+import { AppItem, onlyItemsFromType } from '~/components/Dashboard/types';
+import { useDashboard } from '~/pages';
 import { useConfigStore } from '../../../../../../config/store';
 import { openContextModalGeneric } from '../../../../../../tools/mantineModalManagerExtensions';
 import { AppType } from '../../../../../../types/app';
@@ -25,9 +24,11 @@ export const AvailableElementTypes = ({
   onOpenStaticElements,
 }: AvailableElementTypesProps) => {
   const { t } = useTranslation('layout/element-selector/selector');
-  const { config, name: configName } = useConfigContext();
+  //const { config, name: configName } = useConfigContext();
+  const dashboard = useDashboard();
   const { updateConfig } = useConfigStore();
-  const getLowestWrapper = () => config?.wrappers.sort((a, b) => a.position - b.position)[0];
+  const getLowestWrapper = () =>
+    onlyItemsFromType(dashboard.groups, 'wrapper').sort((a, b) => a.index - b.index)[0];
 
   const onClickCreateCategory = async () => {
     openContextModalGeneric<CategoryEditModalInnerProps>({
@@ -41,9 +42,8 @@ export const AvailableElementTypes = ({
           position: 0, // doesn't matter, is being overwritten
         },
         onSuccess: async (category) => {
-          if (!configName) return;
-
-          await updateConfig(configName, (previousConfig) => ({
+          //if (!configName) return;
+          /*await updateConfig(configName, (previousConfig) => ({
             ...previousConfig,
             wrappers: [
               ...previousConfig.wrappers,
@@ -68,7 +68,7 @@ export const AvailableElementTypes = ({
               message: `The category ${category.name} has been created`,
               color: 'teal',
             });
-          });
+          });*/
         },
       },
     });
@@ -83,37 +83,31 @@ export const AvailableElementTypes = ({
           name="Apps"
           icon={<IconBox size={40} strokeWidth={1.3} />}
           onClick={() => {
-            openContextModalGeneric<{ app: AppType; allowAppNamePropagation: boolean }>({
+            openContextModalGeneric<{ app: Partial<AppItem>; allowAppNamePropagation: boolean }>({
               modal: 'editApp',
               innerProps: {
                 app: {
-                  id: uuidv4(),
                   name: 'Your app',
-                  url: 'https://homarr.dev',
-                  appearance: {
-                    iconUrl: '/imgs/logo/logo.png',
-                  },
-                  network: {
+                  internalUrl: 'https://homarr.dev',
+                  iconSource: '/imgs/logo/logo.png',
+                  /*network: {
                     enabledStatusChecker: true,
                     statusCodes: ['200', '301', '302', '304', '307', '308'],
                     okStatus: [200, 301, 302, 304, 307, 308],
-                  },
-                  behaviour: {
-                    isOpeningNewTab: true,
-                    externalUrl: '',
-                  },
-
-                  area: {
-                    type: 'wrapper',
-                    properties: {
-                      id: getLowestWrapper()?.id ?? 'default',
-                    },
-                  },
-                  shape: {},
-                  integration: {
+                  },*/
+                  openInNewTab: true,
+                  externalUrl: '',
+                  groupId: getLowestWrapper().id,
+                  /*integration: {
                     type: null,
                     properties: [],
-                  },
+                  },*/
+                  type: 'app',
+                  // TODO: remove temporary status location and size
+                  positionX: 0,
+                  positionY: 0,
+                  width: 1,
+                  height: 1,
                 },
                 allowAppNamePropagation: true,
               },

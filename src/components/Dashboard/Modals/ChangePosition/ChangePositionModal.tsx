@@ -1,7 +1,6 @@
 import { Button, Flex, Grid, NumberInput, Select, SelectItem } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'next-i18next';
-import { useConfigContext } from '../../../../config/provider';
 
 interface ChangePositionModalProps {
   initialX?: number;
@@ -24,8 +23,6 @@ export const ChangePositionModal = ({
   onCancel,
   onSubmit,
 }: ChangePositionModalProps) => {
-  const { name: configName } = useConfigContext();
-
   const form = useForm<FormType>({
     initialValues: {
       x: initialX ?? null,
@@ -38,9 +35,9 @@ export const ChangePositionModal = ({
   });
 
   const handleSubmit = () => {
-    if (!configName) {
+    /*if (!configName) {
       return;
-    }
+    }*/
 
     const width = parseInt(form.values.width, 10);
     const height = parseInt(form.values.height, 10);

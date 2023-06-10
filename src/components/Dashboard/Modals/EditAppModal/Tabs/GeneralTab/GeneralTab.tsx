@@ -2,11 +2,11 @@ import { Tabs, TextInput } from '@mantine/core';
 import { UseFormReturnType } from '@mantine/form';
 import { IconClick, IconCursorText, IconLink } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
-import { AppType } from '../../../../../../types/app';
+import { AppItem } from '~/components/Dashboard/types';
 import { EditAppModalTab } from '../type';
 
 interface GeneralTabProps {
-  form: UseFormReturnType<AppType, (values: AppType) => AppType>;
+  form: UseFormReturnType<AppItem, (values: AppItem) => AppItem>;
   openTab: (tab: EditAppModalTab) => void;
 }
 
@@ -30,10 +30,10 @@ export const GeneralTab = ({ form, openTab }: GeneralTabProps) => {
         placeholder="https://google.com"
         variant="default"
         withAsterisk
-        {...form.getInputProps('url')}
+        {...form.getInputProps('internalUrl')}
         onChange={(e) => {
-          form.setFieldValue('behaviour.externalUrl', e.target.value);
-          form.setFieldValue('url', e.target.value);
+          form.setFieldValue('externalUrl', e.target.value);
+          form.setFieldValue('internalUrl', e.target.value);
         }}
       />
       <TextInput
@@ -42,7 +42,7 @@ export const GeneralTab = ({ form, openTab }: GeneralTabProps) => {
         description={t('general.externalAddress.description')}
         placeholder="https://homarr.mywebsite.com/"
         variant="default"
-        {...form.getInputProps('behaviour.externalUrl')}
+        {...form.getInputProps('externalUrl')}
       />
     </Tabs.Panel>
   );

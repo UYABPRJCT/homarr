@@ -1,10 +1,10 @@
-import { Tabs, Switch } from '@mantine/core';
+import { Switch, Tabs } from '@mantine/core';
 import { UseFormReturnType } from '@mantine/form';
 import { useTranslation } from 'next-i18next';
-import { AppType } from '../../../../../../types/app';
+import { AppItem } from '~/components/Dashboard/types';
 
 interface BehaviourTabProps {
-  form: UseFormReturnType<AppType, (values: AppType) => AppType>;
+  form: UseFormReturnType<AppItem, (values: AppItem) => AppItem>;
 }
 
 export const BehaviourTab = ({ form }: BehaviourTabProps) => {
@@ -15,7 +15,7 @@ export const BehaviourTab = ({ form }: BehaviourTabProps) => {
       <Switch
         label={t('behaviour.isOpeningNewTab.label')}
         description={t('behaviour.isOpeningNewTab.description')}
-        {...form.getInputProps('behaviour.isOpeningNewTab', { type: 'checkbox' })}
+        {...form.getInputProps('openInNewTab', { type: 'checkbox' })}
       />
     </Tabs.Panel>
   );
